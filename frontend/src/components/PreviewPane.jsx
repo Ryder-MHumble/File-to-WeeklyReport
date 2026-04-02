@@ -150,7 +150,7 @@ export function PreviewPane({
           </div>
         ) : null}
 
-        {previewState === 'done' ? (
+        {previewState === 'template' || previewState === 'done' ? (
           <div className={`iframe-shell ${previewDevice === 'mobile' ? 'is-mobile' : ''}`}>
             <iframe
               key={iframeKey}
