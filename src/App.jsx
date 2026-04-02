@@ -10,7 +10,7 @@ export default function App() {
   const {
     audience,
     audienceCatalog,
-    canGenerate,
+    canPrimaryAction,
     copiedReady,
     copyReady,
     department,
@@ -25,11 +25,12 @@ export default function App() {
     handleCopyLink,
     handleExport,
     handleFullscreen,
-    handleGenerate,
+    handleGenerateAction,
     handleTemplateSelect,
     iframeKey,
     inputMode,
     isGenerating,
+    isReportReady,
     manualText,
     onAudienceChange,
     onDepartmentChange,
@@ -89,7 +90,13 @@ export default function App() {
             selectedFile={selectedFile}
           />
 
-          <GenerateSection disabled={!canGenerate} generationMode={generationMode} isGenerating={isGenerating} onGenerate={handleGenerate} />
+          <GenerateSection
+            disabled={!canPrimaryAction}
+            generationMode={generationMode}
+            isGenerating={isGenerating}
+            isReportReady={isReportReady}
+            onGenerateAction={handleGenerateAction}
+          />
 
           {errorMessage ? <div className="status-banner status-banner--error">{errorMessage}</div> : null}
           {warnings.length > 0 ? (

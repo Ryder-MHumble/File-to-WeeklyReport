@@ -1,6 +1,7 @@
 const DEFAULT_BASE_URL = 'https://openrouter.ai/api/v1'
 const DEFAULT_HTML_MODEL = 'minimax/minimax-m2.7'
 const DEFAULT_STRUCTURED_MODEL = 'minimax/minimax-m2.7'
+const DEFAULT_POLISH_MODEL = 'minimax/minimax-m2.7'
 const DEFAULT_PROMPT_PROFILE = 'auto'
 const PROMPT_PROFILE_SET = new Set(['auto', 'v1', 'v2'])
 
@@ -15,6 +16,8 @@ export const OPENROUTER_STRUCTURED_MODEL =
   import.meta.env.OPENROUTER_MODEL ||
   import.meta.env.MINIMAX_MODEL ||
   DEFAULT_STRUCTURED_MODEL
+export const OPENROUTER_POLISH_MODEL =
+  import.meta.env.OPENROUTER_POLISH_MODEL || import.meta.env.MINIMAX_POLISH_MODEL || DEFAULT_POLISH_MODEL
 export const OPENROUTER_API_KEY = import.meta.env.OPENROUTER_API_KEY || import.meta.env.MINIMAX_API_KEY || ''
 export const OPENROUTER_PROMPT_PROFILE = normalizePromptProfile(
   import.meta.env.OPENROUTER_PROMPT_PROFILE || DEFAULT_PROMPT_PROFILE,
@@ -164,15 +167,15 @@ export function chooseMaxTokens(rawText, mode) {
   }
 
   if (rawText.length <= 2000) {
-    return 2200
+    return 2600
   }
   if (rawText.length <= 6000) {
-    return 3200
-  }
-  if (rawText.length <= 12000) {
     return 3800
   }
-  return 4600
+  if (rawText.length <= 12000) {
+    return 4600
+  }
+  return 5600
 }
 
 export function resolvePromptProfile(params) {

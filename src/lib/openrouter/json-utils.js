@@ -1,58 +1,186 @@
 export function parseJsonObject(value) {
-  const stripped = value.trim().replace(/^```json/i, '').replace(/^```/, '').replace(/```$/, '').trim()
+  const stripped = sanitizeJsonText(stripCodeFence(value))
+  if (!stripped) {
+    throw new Error('模型输出不包含 JSON 对象')
+  }
+
+  const primaryCandidates = [stripped, extractFirstBalancedObject(stripped)].filter(Boolean)
+  for (const candidate of primaryCandidates) {
+    const parsed = safeJsonParse(candidate)
+    if (parsed) {
+      return parsed
+    }
+  }
+
+  const repairedCandidates = [
+    repairLikelyBrokenJson(stripped),
+    repairLikelyBrokenJson(extractFirstBalancedObject(stripped)),
+  ].filter(Boolean)
+
+  const deduped = Array.from(new Set(repairedCandidates))
+  for (const candidate of deduped) {
+    const parsed = safeJsonParse(candidate)
+    if (parsed) {
+      return parsed
+    }
+  }
+
+  throw new Error('模型输出中的 JSON 不完整')
+}
+
+function stripCodeFence(value) {
+  return String(value ?? '')
+    .trim()
+    .replace(/^```json\s*/i, '')
+    .replace(/^```\s*/i, '')
+    .replace(/\s*```$/i, '')
+    .trim()
+}
+
+function sanitizeJsonText(value) {
+  return String(value ?? '')
+    .replace(/^\uFEFF/, '')
+    .replace(/[“”]/g, '"')
+    .replace(/[‘’]/g, "'")
+    .replace(/\u00A0/g, ' ')
+    .trim()
+}
+
+function safeJsonParse(candidate) {
+  if (!candidate) {
+    return null
+  }
   try {
-    return JSON.parse(stripped)
+    const parsed = JSON.parse(candidate)
+    if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) {
+      return parsed
+    }
+    return null
   } catch {
-    const start = stripped.indexOf('{')
-    if (start < 0) {
-      throw new Error('模型输出不包含 JSON 对象')
-    }
-
-    let depth = 0
-    for (let index = start; index < stripped.length; index += 1) {
-      const char = stripped[index]
-      if (char === '{') {
-        depth += 1
-      } else if (char === '}') {
-        depth -= 1
-        if (depth === 0) {
-          const candidate = stripped.slice(start, index + 1)
-          return JSON.parse(candidate)
-        }
-      }
-    }
-
-    const repaired = repairPossiblyBrokenJson(stripped.slice(start))
-    try {
-      return JSON.parse(repaired)
-    } catch {
-      throw new Error('模型输出中的 JSON 不完整')
-    }
+    return null
   }
 }
 
-function repairPossiblyBrokenJson(source) {
-  let candidate = source.trim()
-  candidate = candidate.replace(/```+$/g, '').trim()
-  candidate = candidate.replace(/,\s*([}\]])/g, '$1')
-
-  const quoteCount = (candidate.match(/"/g) || []).length
-  if (quoteCount % 2 === 1) {
-    candidate = `${candidate}"`
+function extractFirstBalancedObject(source) {
+  const text = String(source ?? '')
+  const start = text.indexOf('{')
+  if (start < 0) {
+    return ''
   }
 
-  const openBraces = (candidate.match(/{/g) || []).length
-  const closeBraces = (candidate.match(/}/g) || []).length
-  if (openBraces > closeBraces) {
-    candidate += '}'.repeat(openBraces - closeBraces)
+  let depth = 0
+  let inString = false
+  let escaped = false
+
+  for (let index = start; index < text.length; index += 1) {
+    const char = text[index]
+
+    if (inString) {
+      if (escaped) {
+        escaped = false
+      } else if (char === '\\') {
+        escaped = true
+      } else if (char === '"') {
+        inString = false
+      }
+      continue
+    }
+
+    if (char === '"') {
+      inString = true
+      continue
+    }
+
+    if (char === '{') {
+      depth += 1
+      continue
+    }
+
+    if (char === '}') {
+      depth -= 1
+      if (depth === 0) {
+        return text.slice(start, index + 1)
+      }
+    }
   }
 
-  const openBrackets = (candidate.match(/\[/g) || []).length
-  const closeBrackets = (candidate.match(/]/g) || []).length
-  if (openBrackets > closeBrackets) {
-    candidate += ']'.repeat(openBrackets - closeBrackets)
+  return text.slice(start)
+}
+
+function repairLikelyBrokenJson(source) {
+  const candidate = sanitizeJsonText(source)
+  if (!candidate) {
+    return ''
   }
 
-  candidate = candidate.replace(/,\s*([}\]])/g, '$1')
-  return candidate
+  const start = candidate.indexOf('{')
+  if (start < 0) {
+    return ''
+  }
+
+  const text = candidate.slice(start)
+  const stack = []
+  let output = ''
+  let inString = false
+  let escaped = false
+
+  for (let index = 0; index < text.length; index += 1) {
+    const char = text[index]
+
+    if (inString) {
+      output += char
+      if (escaped) {
+        escaped = false
+      } else if (char === '\\') {
+        escaped = true
+      } else if (char === '"') {
+        inString = false
+      }
+      continue
+    }
+
+    if (char === '"') {
+      inString = true
+      output += char
+      continue
+    }
+
+    if (char === '{') {
+      stack.push('}')
+      output += char
+      continue
+    }
+
+    if (char === '[') {
+      stack.push(']')
+      output += char
+      continue
+    }
+
+    if (char === '}' || char === ']') {
+      const expected = stack[stack.length - 1]
+      if (expected === char) {
+        stack.pop()
+        output += char
+      }
+      continue
+    }
+
+    output += char
+  }
+
+  if (inString) {
+    if (escaped) {
+      output += '\\'
+    }
+    output += '"'
+  }
+
+  output = output.replace(/,\s*([}\]])/g, '$1')
+
+  while (stack.length > 0) {
+    output += stack.pop()
+  }
+
+  return output.replace(/,\s*([}\]])/g, '$1')
 }

@@ -117,8 +117,41 @@ async function extractFromFile(params) {
   if (suffix === 'docx') {
     const buffer = await file.arrayBuffer()
     const result = await mammoth.extractRawText({ arrayBuffer: buffer })
-    const warnings = filterDocxWarnings(result.messages.map((item) => item.message))
-    return { text: normalizeText(result.value), sourceType: 'docx', warnings }
+    const warningMessages = result.messages.map((item) => item.message)
+    let bestText = normalizeText(result.value)
+    let htmlFallbackUsed = false
+
+    if (bestText.length < 1200) {
+      try {
+        const htmlResult = await mammoth.convertToHtml({ arrayBuffer: buffer })
+        warningMessages.push(...htmlResult.messages.map((item) => item.message))
+        const htmlText = normalizeText(stripDocxHtml(htmlResult.value))
+
+        if (htmlText.length > bestText.length + 120) {
+          bestText = htmlText
+          htmlFallbackUsed = true
+        }
+      } catch {
+        // HTML 二次抽取失败时保持主抽取链路可用
+      }
+    }
+
+    const warnings = filterDocxWarnings(warningMessages)
+    if (htmlFallbackUsed) {
+      warnings.push('DOCX 已启用二次抽取（含表格/段落增强），用于提升结构化质量。')
+      pushLog({
+        kind: 'system',
+        module: '文件抽取',
+        event: 'DOCX 启用二次抽取',
+        payload: {
+          primaryLength: normalizeText(result.value).length,
+          enhancedLength: bestText.length,
+        },
+        timestamp: new Date().toISOString(),
+      })
+    }
+
+    return { text: bestText, sourceType: 'docx', warnings }
   }
 
   if (suffix === 'doc') {
@@ -193,4 +226,19 @@ function filterDocxWarnings(messages) {
   ]
 
   return messages.filter((message) => !benignPatterns.some((pattern) => pattern.test(message)))
+}
+
+function stripDocxHtml(value) {
+  return String(value ?? '')
+    .replace(/<style[\s\S]*?<\/style>/gi, ' ')
+    .replace(/<script[\s\S]*?<\/script>/gi, ' ')
+    .replace(/<li[^>]*>/gi, '• ')
+    .replace(/<\/(p|div|h1|h2|h3|h4|h5|h6|li|tr|table|section|article|br)>/gi, '\n')
+    .replace(/<[^>]+>/g, ' ')
+    .replace(/&nbsp;/gi, ' ')
+    .replace(/&amp;/gi, '&')
+    .replace(/&lt;/gi, '<')
+    .replace(/&gt;/gi, '>')
+    .replace(/&quot;/gi, '"')
+    .replace(/&#39;/gi, "'")
 }

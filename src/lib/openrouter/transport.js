@@ -14,7 +14,14 @@ export async function requestOpenRouter(payload) {
   })
 
   if (!response.ok) {
-    throw new Error(`OpenRouter 请求失败：${response.status}`)
+    let errorDetail = ''
+    try {
+      const bodyText = await response.text()
+      errorDetail = bodyText ? `，响应=${bodyText.slice(0, 300)}` : ''
+    } catch {
+      errorDetail = ''
+    }
+    throw new Error(`OpenRouter 请求失败：${response.status}${errorDetail}`)
   }
 
   return await response.json()

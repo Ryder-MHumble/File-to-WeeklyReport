@@ -138,6 +138,111 @@ export function buildStructuredRetryMessages(params) {
   ]
 }
 
+export function buildStructuredRepairMessages(params) {
+  const { rawText, styleMeta, templateMeta, context, brokenOutput, promptProfile } = params
+  const profile = normalizePromptProfile(promptProfile)
+  const styleProfile = getStyleProfile(styleMeta.id)
+  const departmentProfile = getDepartmentProfile(context.department)
+  const audienceProfile = getAudienceProfile(context.audience)
+
+  const schema =
+    '{"title":"","subtitle":"","summary":"","department_focus":"","audience_focus":""' +
+    ',"highlights":[{"label":"","value":"","detail":""}]' +
+    ',"metrics":[{"name":"","value":"","trend":"","note":""}]' +
+    ',"key_points":[""]' +
+    ',"progress_items":[{"stream":"","status":"","outcome":"","owner":""}]' +
+    ',"risk_items":[{"risk":"","level":"","mitigation":"","owner":""}]' +
+    ',"next_actions":[{"task":"","deadline":"","owner":"","dependency":""}]' +
+    ',"decision_requests":[""],"resource_requests":[""]' +
+    ',"sections":[{"title":"","description":"","items":[{"title":"","body":"","tag":""}]}]}'
+
+  const systemLines = [
+    '你是 JSON 修复器，只负责把“损坏或截断的结构化输出”修复成一个可 JSON.parse 的完整对象。',
+    '只能输出 JSON 对象本体，不得输出解释、代码块、注释。',
+    `字段结构固定如下（字段名不可改）：${schema}`,
+    '修复规则：',
+    '1. 优先保留损坏输出里已有信息，不得随意改写事实。',
+    '2. 无法确认的信息填空字符串、空数组或“待补充”。',
+    '3. 确保括号、引号、逗号完整，最终可被 JSON.parse 一次成功。',
+    `4. 部门：${departmentProfile.name}；受众：${audienceProfile.name}`,
+    `5. 风格：${styleProfile.name}；模板侧重：${templateMeta.focus}`,
+  ]
+
+  if (profile === 'v2') {
+    systemLines.push('6. sections 建议 4-6 组，禁止把整段原文复制到单字段。')
+    systemLines.push('7. decision_requests 与 resource_requests 优先输出可执行语句。')
+  }
+
+  const userLines = [
+    '以下是损坏输出，请修复为合法 JSON：',
+    brokenOutput.slice(0, 14000),
+  ]
+
+  if (rawText) {
+    userLines.push('以下是原始正文片段（用于校验事实，不要求逐字覆盖）：')
+    userLines.push(rawText.slice(0, 1800))
+  }
+
+  return [
+    { role: 'system', content: systemLines.join('\n') },
+    { role: 'user', content: userLines.join('\n\n') },
+  ]
+}
+
+export function buildStructuredPolishMessages(params) {
+  const { rawText, styleMeta, templateMeta, context, promptProfile, structuredDraft } = params
+  const profile = normalizePromptProfile(promptProfile)
+  const styleProfile = getStyleProfile(styleMeta.id)
+  const departmentProfile = getDepartmentProfile(context.department)
+  const audienceProfile = getAudienceProfile(context.audience)
+
+  const schema =
+    '{"title":"","subtitle":"","summary":"","department_focus":"","audience_focus":"","highlights":[{"label":"","value":"","detail":""}],' +
+    '"metrics":[{"name":"","value":"","trend":"","note":""}],"key_points":[""],' +
+    '"progress_items":[{"stream":"","status":"","outcome":"","owner":""}],' +
+    '"risk_items":[{"risk":"","level":"","mitigation":"","owner":""}],' +
+    '"next_actions":[{"task":"","deadline":"","owner":"","dependency":""}],' +
+    '"decision_requests":[""],"resource_requests":[""],' +
+    '"sections":[{"title":"","description":"","items":[{"title":"","body":"","tag":""}]}]}'
+
+  const systemLines = [
+    '你是“周报结构化润色编辑”。请基于原文与已有草稿 JSON，输出更可读、更可执行的最终 JSON。',
+    '只允许输出一个合法 JSON 对象，禁止输出解释、代码块、注释。',
+    `字段结构固定（不可改字段名）：${schema}`,
+    '',
+    '润色与补全规则：',
+    '1. 事实不可编造：数字、时间、结论必须来自原文或草稿可追溯信息。',
+    '2. 允许表达升级：在不改变事实前提下，优化措辞、压缩冗余、增强管理层可读性。',
+    '3. 缺失字段要补齐：无法确认的责任人/时间/依赖统一写“待补充”，不要留空。',
+    '4. summary 建议 110-200 字；highlights 固定 3 条；metrics 建议 3-6 条。',
+    '5. sections 建议 5-8 组，每组 items 建议 2-6 条，每条 body 建议 35-100 字。',
+    '6. decision_requests/resource_requests 要可执行，优先“动作 + 时间 + 对象”句式。',
+    '',
+    `部门：${departmentProfile.name}；重点：${departmentProfile.priorities.join('、')}`,
+    `受众：${audienceProfile.name}；关注：${audienceProfile.decisionFocus}`,
+    `风格：${styleProfile.name}；语言策略：${styleProfile.languageStrategy}`,
+    `模板侧重点：${templateMeta.focus}`,
+  ]
+
+  if (profile === 'v2') {
+    systemLines.push('7. 输出前做 JSON 完整性自检，确保可直接 JSON.parse。')
+    systemLines.push('8. sections 中优先保留高信号事项，避免流水账。')
+  }
+
+  const userLines = [
+    '以下是原文（节选）：',
+    rawText.slice(0, 8000),
+    '以下是结构化草稿 JSON：',
+    structuredDraft.slice(0, 14000),
+    '请输出润色后的最终 JSON：',
+  ]
+
+  return [
+    { role: 'system', content: systemLines.join('\n') },
+    { role: 'user', content: userLines.join('\n\n') },
+  ]
+}
+
 export function buildHtmlMessages(params) {
   const { rawText, sensitiveMode, styleMeta, templateMeta, context, promptProfile } = params
   const profile = normalizePromptProfile(promptProfile)

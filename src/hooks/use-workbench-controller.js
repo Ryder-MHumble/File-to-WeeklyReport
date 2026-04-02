@@ -59,6 +59,8 @@ export function useWorkbenchController() {
 
   const hasContent = inputMode === 'file' ? Boolean(selectedFile) : Boolean(manualText.trim())
   const canGenerate = Boolean(hasContent && (generationMode === 'llm-html' || selectedTemplate)) && !isGenerating
+  const canResetReport = Boolean(isReportReady && !isGenerating)
+  const canPrimaryAction = canGenerate || canResetReport
   const exportReady = Boolean(isReportReady && reportLink)
   const copyReady = Boolean(isReportReady && reportLink)
 
@@ -76,7 +78,7 @@ export function useWorkbenchController() {
       : generationMode === 'structured-template' && selectedTemplate
         ? 'template'
         : 'idle'
-  const showTemplateBridge = generationMode === 'structured-template'
+  const showTemplateBridge = generationMode === 'structured-template' && !isReportReady
   const fullscreenReady = Boolean(isReportReady || previewState === 'template')
 
   const previewHtml = useMemo(() => {
@@ -243,6 +245,24 @@ export function useWorkbenchController() {
     }
   }
 
+  const handleGenerateAction = async () => {
+    if (isReportReady) {
+      pushLog({
+        kind: 'system',
+        module: '转换编排',
+        event: '清空当前报告',
+        payload: {
+          generationMode,
+          templateId: selectedTemplate?.id ?? null,
+        },
+        timestamp: new Date().toISOString(),
+      })
+      resetGeneratedOutput()
+      return
+    }
+    await handleGenerate()
+  }
+
   const handleTemplateSelect = (templateId) => {
     if (!templateId) {
       return
@@ -306,9 +326,9 @@ export function useWorkbenchController() {
   }
 
   const handleShortcut = useEffectEvent((event) => {
-    if ((event.metaKey || event.ctrlKey) && event.key === 'Enter' && canGenerate) {
+    if ((event.metaKey || event.ctrlKey) && event.key === 'Enter' && canPrimaryAction) {
       event.preventDefault()
-      handleGenerate()
+      handleGenerateAction()
     }
   })
 
@@ -382,6 +402,7 @@ export function useWorkbenchController() {
     audience,
     audienceCatalog,
     canGenerate,
+    canPrimaryAction,
     copiedReady,
     copyReady,
     department,
@@ -396,11 +417,12 @@ export function useWorkbenchController() {
     handleCopyLink,
     handleExport,
     handleFullscreen,
-    handleGenerate,
+    handleGenerateAction,
     handleTemplateSelect,
     iframeKey,
     inputMode,
     isGenerating,
+    isReportReady,
     manualText,
     onAudienceChange: (value) => {
       resetGeneratedOutput()

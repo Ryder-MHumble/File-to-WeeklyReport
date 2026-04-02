@@ -1082,6 +1082,16 @@ select {
   box-shadow: 0 14px 30px rgba(4, 28, 70, 0.55);
 }
 
+.generate-action-button.is-reset {
+  border-color: rgba(233, 167, 84, 0.44);
+  background: linear-gradient(135deg, rgba(186, 86, 26, 0.94), rgba(232, 169, 64, 0.92));
+}
+
+.generate-action-button.is-reset:hover:not(:disabled) {
+  box-shadow: 0 10px 20px rgba(89, 41, 8, 0.5);
+  filter: brightness(1.06);
+}
+
 .template-focus-card__body {
   display: grid;
   gap: 6px;
