@@ -41,6 +41,7 @@
 
   try {
     const startedAt = performance.now()
+    const previewLite = Boolean(window.__FILE2WEB_PREVIEW_LITE__)
     logSystem('info', '模板启动')
 
     const payload = readPayload()
@@ -109,22 +110,40 @@
       `
     }
 
-    logBusinessJson('render_payload', { stats: stats.length, overview: overview.length, internal: (groups.internal || []).length, cooperation: (groups.cooperation || []).length, visit: (groups.visit || []).length, system: (groups.system || []).length })
+    logBusinessJson('render_payload', {
+      stats: stats.length,
+      overview: overview.length,
+      internal: (groups.internal || []).length,
+      cooperation: (groups.cooperation || []).length,
+      visit: (groups.visit || []).length,
+      system: (groups.system || []).length,
+      previewLite,
+    })
     logSystem('info', '模板完成', { elapsedMs: Number((performance.now() - startedAt).toFixed(2)) })
   } catch (error) {
     logSystem('error', '模板渲染失败', { message: error instanceof Error ? error.message : String(error) })
   }
 })()
 
-const io=new IntersectionObserver(entries=>{
-  entries.forEach(e=>{
-    if(!e.isIntersecting)return;
-    e.target.classList.add('vis');
-    e.target.querySelectorAll('.dr-fill,[data-w]').forEach(el=>{
-      const w=el.dataset.w||el.getAttribute('data-w');
-      if(w)setTimeout(()=>el.style.width=w,300);
+const previewLite = Boolean(window.__FILE2WEB_PREVIEW_LITE__)
+
+if (previewLite) {
+  document.querySelectorAll('.col-reveal').forEach((el) => el.classList.add('vis'))
+  document.querySelectorAll('.dr-fill,[data-w]').forEach((el) => {
+    const w = el.dataset.w || el.getAttribute('data-w') || '0'
+    el.style.width = w
+  })
+} else {
+  const io=new IntersectionObserver(entries=>{
+    entries.forEach(e=>{
+      if(!e.isIntersecting)return;
+      e.target.classList.add('vis');
+      e.target.querySelectorAll('.dr-fill,[data-w]').forEach(el=>{
+        const w=el.dataset.w||el.getAttribute('data-w');
+        if(w)setTimeout(()=>el.style.width=w,300);
+      });
+      io.unobserve(e.target);
     });
-    io.unobserve(e.target);
-  });
-},{threshold:.05});
-document.querySelectorAll('.col-reveal').forEach(el=>io.observe(el));
+  },{threshold:.05});
+  document.querySelectorAll('.col-reveal').forEach(el=>io.observe(el));
+}

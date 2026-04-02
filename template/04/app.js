@@ -79,6 +79,7 @@
 
   try {
     const startedAt = performance.now()
+    const previewLite = Boolean(window.__FILE2WEB_PREVIEW_LITE__)
     logSystem('info', '模板启动')
 
     const payload = readPayload()
@@ -212,7 +213,15 @@
       `
     }
 
-    logBusinessJson('render_payload', { stats: stats.length, overview: overview.length, internal: (groups.internal || []).length, cooperation: (groups.cooperation || []).length, visit: (groups.visit || []).length, system: (groups.system || []).length })
+    logBusinessJson('render_payload', {
+      stats: stats.length,
+      overview: overview.length,
+      internal: (groups.internal || []).length,
+      cooperation: (groups.cooperation || []).length,
+      visit: (groups.visit || []).length,
+      system: (groups.system || []).length,
+      previewLite,
+    })
     logSystem('info', '模板完成', { elapsedMs: Number((performance.now() - startedAt).toFixed(2)) })
   } catch (error) {
     logSystem('error', '模板渲染失败', { message: error instanceof Error ? error.message : String(error) })
@@ -220,18 +229,27 @@
 })()
 
 // 数字滚动
-document.querySelectorAll('.kpi-num[data-target]').forEach(el=>{
-  const t=parseInt(el.dataset.target);
-  let s=performance.now();
-  const d=1600;
-  const go=now=>{
-    const p=Math.min((now-s)/d,1);
-    const e=1-Math.pow(1-p,4);
-    el.textContent=Math.round(e*t);
-    if(p<1)requestAnimationFrame(go);
-  };
-  setTimeout(()=>{s=performance.now();requestAnimationFrame(go);},300);
-});
+const previewLite = Boolean(window.__FILE2WEB_PREVIEW_LITE__)
+
+if (previewLite) {
+  document.querySelectorAll('.kpi-num[data-target]').forEach((el) => {
+    const target = parseInt(el.dataset.target || '0', 10)
+    el.textContent = String(target)
+  })
+} else {
+  document.querySelectorAll('.kpi-num[data-target]').forEach(el=>{
+    const t=parseInt(el.dataset.target);
+    let s=performance.now();
+    const d=1600;
+    const go=now=>{
+      const p=Math.min((now-s)/d,1);
+      const e=1-Math.pow(1-p,4);
+      el.textContent=Math.round(e*t);
+      if(p<1)requestAnimationFrame(go);
+    };
+    setTimeout(()=>{s=performance.now();requestAnimationFrame(go);},300);
+  });
+}
 
 // 进度条
 function animateBars(container){
@@ -241,18 +259,25 @@ function animateBars(container){
 }
 
 // IntersectionObserver
-const io=new IntersectionObserver(entries=>{
-  entries.forEach(e=>{
-    if(!e.isIntersecting)return;
-    e.target.classList.add('vis');
-    e.target.querySelectorAll('.tl-item').forEach((i,idx)=>{
-      setTimeout(()=>i.classList.add('vis'),idx*120);
+if (previewLite) {
+  document.querySelectorAll('.reveal,.tl-item').forEach((el) => el.classList.add('vis'))
+  document.querySelectorAll('[data-w]').forEach((el) => {
+    el.style.width = el.dataset.w || '0'
+  })
+} else {
+  const io=new IntersectionObserver(entries=>{
+    entries.forEach(e=>{
+      if(!e.isIntersecting)return;
+      e.target.classList.add('vis');
+      e.target.querySelectorAll('.tl-item').forEach((i,idx)=>{
+        setTimeout(()=>i.classList.add('vis'),idx*120);
+      });
+      setTimeout(()=>animateBars(e.target),400);
+      io.unobserve(e.target);
     });
-    setTimeout(()=>animateBars(e.target),400);
-    io.unobserve(e.target);
-  });
-},{threshold:.06});
-document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
+  },{threshold:.06});
+  document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
+}
 
 // 侧边栏高亮
 function scrollTo2(id, evt){
@@ -264,15 +289,17 @@ function scrollTo2(id, evt){
 }
 
 // 滚动同步侧边栏
-const sections=['ov','sync','collab','visit','system','data','footer'];
-const sideItems=document.querySelectorAll('.sidebar-item');
-window.addEventListener('scroll',()=>{
-  let cur='';
-  sections.forEach(id=>{
-    const el=document.getElementById(id);
-    if(el&&window.scrollY>=el.offsetTop-200)cur=id;
-  });
-  sideItems.forEach((item,i)=>{
-    item.classList.toggle('active',i===sections.indexOf(cur));
-  });
-},{passive:true});
+if (!previewLite) {
+  const sections=['ov','sync','collab','visit','system','data','footer'];
+  const sideItems=document.querySelectorAll('.sidebar-item');
+  window.addEventListener('scroll',()=>{
+    let cur='';
+    sections.forEach(id=>{
+      const el=document.getElementById(id);
+      if(el&&window.scrollY>=el.offsetTop-200)cur=id;
+    });
+    sideItems.forEach((item,i)=>{
+      item.classList.toggle('active',i===sections.indexOf(cur));
+    });
+  },{passive:true});
+}

@@ -52,6 +52,7 @@
 
   try {
     const startedAt = performance.now()
+    const previewLite = Boolean(window.__FILE2WEB_PREVIEW_LITE__)
     logSystem('info', '模板启动')
 
     const payload = readPayload()
@@ -134,21 +135,37 @@
       `
     }
 
-    logBusinessJson('render_payload', { ticker: ticker.length, internal: (groups.internal || []).length, cooperation: (groups.cooperation || []).length, visit: (groups.visit || []).length, system: (groups.system || []).length })
+    logBusinessJson('render_payload', {
+      ticker: ticker.length,
+      internal: (groups.internal || []).length,
+      cooperation: (groups.cooperation || []).length,
+      visit: (groups.visit || []).length,
+      system: (groups.system || []).length,
+      previewLite,
+    })
     logSystem('info', '模板完成', { elapsedMs: Number((performance.now() - startedAt).toFixed(2)) })
   } catch (error) {
     logSystem('error', '模板渲染失败', { message: error instanceof Error ? error.message : String(error) })
   }
 })()
 
-const io=new IntersectionObserver(entries=>{
-  entries.forEach(e=>{
-    if(!e.isIntersecting)return;
-    e.target.classList.add('vis');
-    e.target.querySelectorAll('[data-w]').forEach(el=>{
-      setTimeout(()=>el.style.width=el.dataset.w,300);
+const previewLite = Boolean(window.__FILE2WEB_PREVIEW_LITE__)
+
+if (previewLite) {
+  document.querySelectorAll('.story-item,.fade-up,.data-card').forEach((el) => el.classList.add('vis'))
+  document.querySelectorAll('[data-w]').forEach((el) => {
+    el.style.width = el.dataset.w || '0'
+  })
+} else {
+  const io=new IntersectionObserver(entries=>{
+    entries.forEach(e=>{
+      if(!e.isIntersecting)return;
+      e.target.classList.add('vis');
+      e.target.querySelectorAll('[data-w]').forEach(el=>{
+        setTimeout(()=>el.style.width=el.dataset.w,300);
+      });
+      io.unobserve(e.target);
     });
-    io.unobserve(e.target);
-  });
-},{threshold:.04});
-document.querySelectorAll('.story-item,.fade-up,.data-card').forEach(el=>io.observe(el));
+  },{threshold:.04});
+  document.querySelectorAll('.story-item,.fade-up,.data-card').forEach(el=>io.observe(el));
+}
