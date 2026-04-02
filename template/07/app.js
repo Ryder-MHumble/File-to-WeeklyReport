@@ -139,6 +139,7 @@
 
 // Matrix 雨
 (function(){
+  if (window.__FILE2WEB_PREVIEW_LITE__) return;
   const c = document.getElementById('matrix-canvas');
   if (!c) return;
   const ctx = c.getContext('2d');

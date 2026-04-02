@@ -3,7 +3,8 @@ import { templateCatalog } from './catalog'
 import { normalizeDocument } from './document-normalizer'
 import { buildTemplatePayload } from './view-models'
 
-export function renderTemplateHtml(templateId, document, generatedAt) {
+export function renderTemplateHtml(templateId, document, generatedAt, options = {}) {
+  const { runtimeMode = 'preview' } = options
   const templateMeta = templateCatalog.find((item) => item.id === templateId)
   const asset = templateAssets[templateId]
 
@@ -13,18 +14,37 @@ export function renderTemplateHtml(templateId, document, generatedAt) {
 
   const normalized = normalizeDocument(document)
   const payload = buildTemplatePayload(templateMeta, normalized, generatedAt)
-  return injectTemplate(asset, payload)
+  return injectTemplate(asset, payload, runtimeMode)
 }
 
-function injectTemplate(asset, payload) {
+function injectTemplate(asset, payload, runtimeMode) {
   const serializedPayload = serializePayload(payload)
   const styleBlock = asset.css
-  const scriptBlock = asset.js.replaceAll('</script>', '<\\/script>')
+  const scriptBlock = buildRuntimeScript(asset.js, runtimeMode)
 
   return asset.html
     .replace('__TEMPLATE_STYLE__', styleBlock)
     .replace('__TEMPLATE_DATA__', serializedPayload)
     .replace('__TEMPLATE_SCRIPT__', scriptBlock)
+}
+
+function buildRuntimeScript(templateScript, runtimeMode) {
+  const escapedTemplateScript = templateScript.replaceAll('</script>', '<\\/script>')
+  if (runtimeMode !== 'preview') {
+    return escapedTemplateScript
+  }
+
+  const previewBootstrap = `
+window.__FILE2WEB_PREVIEW_LITE__ = true;
+(function () {
+  const nativeSetInterval = window.setInterval.bind(window);
+  window.setInterval = function (handler, timeout, ...rest) {
+    const safeTimeout = typeof timeout === 'number' && timeout < 220 ? 220 : timeout;
+    return nativeSetInterval(handler, safeTimeout, ...rest);
+  };
+})();`
+
+  return `${previewBootstrap}\n${escapedTemplateScript}`
 }
 
 function serializePayload(payload) {

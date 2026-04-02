@@ -25,9 +25,9 @@
 
 ## 当前架构
 
-- `frontend/`：React + Vite 单体应用（无后端服务）
+- `src/`：React + Vite 单体应用源码（无后端服务）
 - `template/`：模板资产目录（`01~10`），每个模板可独立预览并支持数据注入渲染
-- `start-all.sh`：一键启动前端开发服务
+- `dist/`：前端构建输出目录
 
 ## 模板注入协议
 
@@ -66,7 +66,8 @@
 ## 快速启动
 
 ```bash
-./start-all.sh
+npm install
+npm run dev
 ```
 
 启动地址：
@@ -76,7 +77,6 @@
 ## 手动启动
 
 ```bash
-cd frontend
 npm install
 npm run dev
 ```
@@ -84,11 +84,10 @@ npm run dev
 ## 构建
 
 ```bash
-cd frontend
 npm run build
 ```
 
-构建输出目录：`frontend/dist`
+构建输出目录：`dist`
 
 ## 重要说明
 

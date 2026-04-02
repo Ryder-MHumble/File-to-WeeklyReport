@@ -3,7 +3,6 @@ import react from '@vitejs/plugin-react'
 
 export default defineConfig({
   plugins: [react()],
-  envDir: '..',
   envPrefix: ['VITE_', 'OPENROUTER_', 'MINIMAX_', 'MAX_'],
   server: {
     host: '127.0.0.1',

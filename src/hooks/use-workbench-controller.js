@@ -93,10 +93,10 @@ export function useWorkbenchController() {
 
     const stamp = generatedAt || new Date().toLocaleString('zh-CN')
     const templateData = isReportReady ? documentData : demoDocument
-    return renderTemplateHtml(selectedTemplate.templateMeta.id, templateData, stamp)
+    return renderTemplateHtml(selectedTemplate.templateMeta.id, templateData, stamp, { runtimeMode: 'preview' })
   }, [documentData, generatedAt, generatedHtml, generationMode, isReportReady, selectedTemplate])
 
-  const iframeKey = `${previewState}-${selectedTemplate?.id || 'none'}-${generatedAt || 'preview'}-${isFullscreen ? 'fullscreen' : 'default'}`
+  const iframeKey = `${generationMode}-${selectedTemplate?.id || 'none'}-${generatedAt || 'preview'}`
 
   const pushLog = (entry) => {
     const serialized = JSON.stringify(entry.payload, null, 2)
@@ -259,7 +259,14 @@ export function useWorkbenchController() {
       return
     }
 
-    const blob = new Blob([previewHtml], { type: 'text/html;charset=utf-8' })
+    const exportHtml =
+      generationMode === 'structured-template' && selectedTemplate
+        ? renderTemplateHtml(selectedTemplate.templateMeta.id, documentData, generatedAt || new Date().toLocaleString('zh-CN'), {
+            runtimeMode: 'full',
+          })
+        : previewHtml
+
+    const blob = new Blob([exportHtml], { type: 'text/html;charset=utf-8' })
     const url = URL.createObjectURL(blob)
     const anchor = document.createElement('a')
     anchor.href = url
