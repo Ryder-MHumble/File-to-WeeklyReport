@@ -63,6 +63,20 @@ export function TemplateThumbnail({ variant }) {
     )
   }
 
+  if (variant === 'neo-brutal-poster') {
+    return (
+      <svg viewBox="0 0 88 64" className="template-thumb-svg" aria-hidden="true">
+        <rect x="6" y="8" width="76" height="48" fill="#fdf5e3" stroke="#121212" strokeWidth="2.8" />
+        <text x="12" y="24" fill="#121212" fontSize="10" fontWeight="800">
+          BRUTAL
+        </text>
+        <rect x="12" y="28" width="40" height="10" fill="#ff5a2f" stroke="#121212" strokeWidth="1.8" />
+        <rect x="54" y="28" width="22" height="10" fill="#12a4ff" stroke="#121212" strokeWidth="1.8" />
+        <rect x="12" y="41" width="64" height="10" fill="#ffe24c" stroke="#121212" strokeWidth="1.8" />
+      </svg>
+    )
+  }
+
   if (variant === 'ink-scroll') {
     return (
       <svg viewBox="0 0 88 64" className="template-thumb-svg" aria-hidden="true">

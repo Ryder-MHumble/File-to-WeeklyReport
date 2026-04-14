@@ -1,6 +1,6 @@
 (() => {
   const current = document.currentScript
-  const templateId = current?.dataset.templateId || document.body.dataset.templateId || 'template-01'
+  const templateId = current?.dataset.templateId || document.body.dataset.templateId || 'template-02'
   const styleHref = current?.dataset.styleHref || './style.css'
   const scriptSrc = current?.dataset.scriptSrc || './app.js'
   const styleNode = document.getElementById('template-inline-style')
@@ -22,94 +22,95 @@
   })
 
   const stats = [
-    { label: '重大科研成果', value: '5', unit: '项', detail: '完成四轮评审', target: 5 },
-    { label: '国家基金申报', value: '34', unit: '项', detail: '完成集中申报', target: 34 },
-    { label: '国际青年论坛', value: '19', unit: '名', detail: '覆盖 9 个国家和地区', target: 19 },
-    { label: '深澜计划报名', value: '470', unit: '人', detail: '来自 108 所高校', target: 470 },
-    { label: '夏令营报名', value: '700', unit: '+', detail: '研招系统已开放', target: 700 },
+    { label: '重点课题按期率', value: '94', unit: '%', detail: '关键节点稳定交付', target: 94 },
+    { label: '阶段成果转化率', value: '7.8', unit: '%', detail: '较上周提升 0.9%', target: 7.8 },
+    { label: '合作机构数', value: '8', unit: '家', detail: '新增联合研究合作', target: 8 },
+    { label: '评审事项总量', value: '136', unit: '单', detail: '已完成分级处置', target: 136 },
+    { label: '实验效率提升', value: '18', unit: '%', detail: '链路优化策略见效', target: 18 },
   ]
 
   const overview = [
-    { number: '01', tag: '科研组织', title: '两院重大科研成果评选完成', body: '经过 4 轮评审，形成 5 项重点成果推荐名单，并进入论坛发布与转化对接阶段。', tone: 'red' },
-    { number: '02', tag: '科研申报', title: '国家自然科学基金集中申报收口', body: '完成 34 项项目申报材料汇总与提交流程，组织工作按时闭环。', tone: 'jade' },
-    { number: '03', tag: '国际交流', title: '第四届中关村国际青年论坛召开', body: '论坛吸引 19 名青年学者到场交流，形成多项后续合作议题。', tone: 'indigo' },
-    { number: '04', tag: '学术研讨', title: '清华-两院 AI+数学研讨会举办', body: '围绕交叉研究方向展开深度讨论，现场参会师生超过 80 人。', tone: 'gold' },
-    { number: '05', tag: '少年学院', title: '少年学院展示项目取得阶段成果', body: '学生项目在公开展示活动中获得关注，体现培养机制成效。', tone: 'copper' },
+    { number: '01', tag: '课题推进', title: '重点课题阶段评审闭环', body: '完成评审链路复盘并锁定下一轮攻关任务与资源节奏。', tone: 'red' },
+    { number: '02', tag: '平台协同', title: '科研数据平台联调上线', body: '核心处理链路吞吐提升，节点响应时间明显缩短。', tone: 'jade' },
+    { number: '03', tag: '外部合作', title: '联合研究网络扩容', body: '新增 8 家合作机构，覆盖多学科联合攻关方向。', tone: 'indigo' },
+    { number: '04', tag: '学术支持', title: '项目评审分级机制跑通', body: '高优先级课题闭环时效提升，升级项跟踪机制生效。', tone: 'gold' },
+    { number: '05', tag: '机制优化', title: '科研数据看板升级', body: '新增里程碑预警与自动建议策略，支持日报决策。', tone: 'copper' },
   ]
 
   const groups = {
     internal: [
-      workItem('第一季度推进会', '完成 51 个项目评审并明确后续资源配置。', '已完成', 100, 'done'),
-      workItem('重大项目首轮讨论', '三学部完成首轮汇报，进入意见收敛阶段。', '进行中', 60, 'progress'),
-      workItem('深澜访学计划启动', '完成报名收口与首轮遴选，录取结果同步发布。', '已完成', 100, 'done'),
-      workItem('2026 年夏令营启动', '校园大使与导师招募完成，报名持续增长。', '进行中', 45, 'progress'),
-      workItem('博士生补充答辩', '完成 4 场答辩组织，形成结果汇总。', '已完成', 100, 'done'),
-      workItem('清北导师池计划', '明确联合培育与自由探索两类合作模式。', '进行中', 50, 'progress'),
+      workItem('阶段评审复盘会', '形成 11 项攻关动作并明确责任人。', '已完成', 100, 'done'),
+      workItem('平台联调灰度', '核心模块联调上线，性能监控持续观察。', '进行中', 68, 'progress'),
+      workItem('评审规则升级', '高风险课题自动标记规则已生效。', '进行中', 56, 'progress'),
+      workItem('实验效率提升专项', '实验链路优化进入第二阶段。', '推进中', 62, 'progress'),
+      workItem('里程碑跟踪看板', '新增关键节点偏差预测模型。', '推进中', 44, 'progress'),
     ],
     cooperation: [
-      workItem('中央民族大学战略合作协议', '协议经院务会审理通过，进入执行准备。', '已完成', 80, 'done'),
-      workItem('清华大学求真书院合作', '围绕联合培养与教师合作立项持续推进。', '推进中', 55, 'progress'),
-      workItem('北邮定向招生班共建', '已完成首轮意向对接，进入方案整理。', '推进中', 50, 'progress'),
-      workItem('北航共建协议', '核心条款仍待协商，会签节点后移。', '待推进', 40, 'warning'),
-      workItem('北京大学工学院合作探索', '课程创新与技术转化合作同步沟通。', '推进中', 35, 'progress'),
-      workItem('香港城市大学战略合作', '受规则限制暂缓推进，保留后续补充协议空间。', '待推进', 25, 'warning'),
+      workItem('联合研究机构合作', '完成合作条款确认，进入联合验证排期。', '已完成', 82, 'done'),
+      workItem('跨机构实验平台联建', '试点课题扩展到 3 个核心方向。', '推进中', 58, 'progress'),
+      workItem('实验资源池扩容', '新增夜间算力窗口与高峰备援方案。', '推进中', 51, 'progress'),
+      workItem('联合发布活动', '联合成果摘要审核通过，待发布。', '待推进', 39, 'warning'),
+      workItem('跨校数据协同链路', '接口评审完成，等待合规确认。', '待推进', 33, 'warning'),
     ],
     visit: [
-      workItem('中关村国际青年论坛', '论坛环节顺利完成，形成后续对接清单。', '已完成', 100, 'done'),
-      workItem('香港科技大学合作交流', '围绕联培与课程合作形成下一轮研讨计划。', '推进中', 45, 'progress'),
-      workItem('首都体育学院访问', '双方围绕科研合作与活动联动交换意见。', '已完成', 70, 'done'),
-      workItem('怀柔实验室虚拟实验班', '仍处于机制论证阶段。', '探讨中', 20, 'warning'),
-      workItem('少年学院对外交流', '围绕项目展示与活动联动形成正向反馈。', '已完成', 100, 'done'),
+      workItem('科研平台中心走访', '确认高峰计算瓶颈并制定改造计划。', '已完成', 100, 'done'),
+      workItem('联合实验室巡检', '完成 12 个实验节点配置一致性检查。', '进行中', 71, 'progress'),
+      workItem('研究团队访谈', '收集协同反馈并建立问题清单。', '推进中', 47, 'progress'),
+      workItem('夜间实验窗口观察', '发现峰值切换延迟，已挂单跟进。', '待推进', 26, 'warning'),
     ],
     system: [
-      workItem('国际事务联动平台', '推动论坛资源共享与外部引流机制建设。', '进行中', 40, 'progress'),
-      workItem('国际 AI 科学家联盟', '完成主管沟通与阶段性汇报。', '推进中', 30, 'progress'),
-      workItem('课程建设与质量保证', '课程评价分析完成，督导机制持续落地。', '进行中', 60, 'progress'),
-      workItem('博士研究生实习管理办法', '正式印发并进入执行阶段。', '已完成', 100, 'done'),
-      workItem('招生智能体系统建设', '进入建设期，功能边界与数据接口已锁定。', '建设中', 15, 'warning'),
-      workItem('学者知识图谱第三轮迭代', '完成五维画像与重点学者筛选。', '迭代完成', 75, 'done'),
+      workItem('科研数据看板升级', '里程碑预警、攻关建议、进度对比三模块已发布。', '已完成', 92, 'done'),
+      workItem('评审规则库', '完成优先级策略与自动分派映射。', '推进中', 63, 'progress'),
+      workItem('课题预算守护规则', '新增日内偏差阈值和提醒机制。', '推进中', 48, 'progress'),
+      workItem('跨平台资源结算规范', '条款评审完成，准备发布。', '待推进', 36, 'warning'),
+      workItem('课题风险周会机制', '已固化复盘模板与责任追踪链。', '已完成', 100, 'done'),
     ],
   }
 
   const keyMetrics = [
-    { label: '重大科研成果', value: '5', unit: '项', sub: '论坛发布窗口已锁定' },
-    { label: '国家基金申报', value: '34', unit: '项', sub: '含参与项目 5 项' },
-    { label: '深澜计划报名', value: '470', unit: '人', sub: '来自 108 所高校' },
-    { label: '夏令营报名', value: '700', unit: '+', sub: '系统已开放' },
-    { label: '海外学者筛选', value: '58', unit: '名', sub: '知识图谱第三轮迭代' },
-    { label: '课程督导专家', value: '12', unit: '位', sub: '分阶段听课' },
+    { label: '里程碑按期率', value: '94', unit: '%', sub: '关键节点稳定在目标线以上' },
+    { label: '阶段成果转化率', value: '7.8', unit: '%', sub: '成果提交-评审链路优化' },
+    { label: '合作机构数', value: '8', unit: '家', sub: '新增联合研究合作伙伴' },
+    { label: '评审事项', value: '136', unit: '单', sub: '已完成分级和优先级归档' },
+    { label: '实验效率提升', value: '18', unit: '%', sub: '关键实验耗时环比下降' },
+    { label: '跨机构协同时效', value: '3.2', unit: '小时', sub: '核心协同链路平均耗时' },
   ]
 
+  const defense = { total: 136, pass: 108, fail: 18, revised: 10, exam: 0 }
+
   const footer = {
-    issuedBy: '中关村两院教科人管理中心',
-    recipient: '中关村两院领导班子成员',
-    distribution: '教科人管理中心各部门',
+    issuedBy: '科研协同与成果转化办公室',
+    recipient: '课题推进管理委员会',
+    distribution: '课题推进中心各小组',
     editor: '（待填写）',
     reviewer: '（待填写）',
-    date: '2026年04月02日',
-    dateOnly: '2026-04-02',
-    timestamp: '2026-04-02T10:00:00+08:00',
+    date: '2026年04月14日',
+    dateOnly: '2026-04-14',
+    timestamp: '2026-04-14T10:00:00+08:00',
   }
+
+  const metaTitle = '科研协同中心周报 · 示例版'
+  const metaSubtitle = '科研协同与成果转化办公室 · 2026年4月第2周'
 
   const payloadCatalog = {
     'template-01': {
       templateId: 'template-01',
       templateName: '极简周报版式',
       meta: {
-        title: '教科人管理中心周报 · 示例版',
-        subtitle: '中关村两院教科人管理中心 · 2026年4月第1周',
-        summary: '本周围绕科研组织、招生协同、国际合作与制度建设持续推进，形成阶段性进展并明确下周动作。',
+        title: metaTitle,
+        subtitle: metaSubtitle,
+        summary: '本周重点围绕课题攻关、合作推进与平台能力建设展开，关键链路整体稳定。',
       },
       viewModel: {
         minimal: {
           hero: {
-            eyebrow: '中关村两院教科人管理中心 · 内部周报',
-            title: '教科人管理中心周报 · 示例版',
-            summary: '本周围绕科研组织、招生协同、国际合作与制度建设持续推进，形成阶段性进展并明确下周动作。',
-            period: '中关村两院教科人管理中心 · 2026年4月第1周',
+            eyebrow: `${footer.issuedBy} · 内部周报`,
+            title: metaTitle,
+            summary: '本周重点围绕课题攻关、合作推进与平台能力建设展开，关键链路整体稳定。',
+            period: metaSubtitle,
             unit: footer.issuedBy,
             issuedAt: footer.date,
-            bgNumber: '01',
+            bgNumber: '02',
           },
           stats,
           overview,
@@ -127,20 +128,17 @@
       templateId: 'template-02',
       templateName: '杂志封面周报',
       meta: {
-        title: '教科人管理中心周报 · 示例版',
-        subtitle: '中关村两院教科人管理中心 · 2026年4月第1周',
-        summary: '本期围绕重点成果发布、申报收口、国际交流和制度建设四条主线展开。',
+        title: metaTitle,
+        subtitle: metaSubtitle,
+        summary: '本期围绕课题攻关、平台协同、外部合作和规则升级四条主线展开。',
       },
       viewModel: {
         magazine: {
           cover: {
-            issueLabel: 'Vol.01 · 2026 · 第01期',
-            headline: '五项重大科研成果即将在论坛窗口集中发布',
-            decks: [
-              '经过多轮评审，本周完成重点成果推荐名单收口，发布与转化对接工作同步启动。',
-              '与此同时，国际交流、招生协同与制度建设持续推进，多条工作线进入执行窗口。',
-            ],
-            period: '2026年3月27日—4月2日',
+            issueLabel: 'Vol.02 · 2026 · 第02期',
+            headline: '科研平台联调上线，协同效率进入稳定区间',
+            decks: ['攻关、协同、平台三条主线本周均有阶段成果。', '下周将进入新一轮联合验证与评审窗口。'],
+            period: '2026年4月8日—4月14日',
             unit: footer.issuedBy,
           },
           stats: stats.slice(0, 4),
@@ -149,7 +147,7 @@
           groups,
           data: {
             keyMetrics: keyMetrics.slice(0, 5),
-            defense: { total: 17, pass: 11, fail: 5, revised: 1, exam: 1 },
+            defense,
             cooperation: groups.cooperation.slice(0, 6),
           },
           footer,
@@ -160,17 +158,17 @@
       templateId: 'template-03',
       templateName: '国风卷轴周报',
       meta: {
-        title: '教科人管理中心周报 · 示例版',
-        subtitle: '中关村两院教科人管理中心 · 2026年4月第1周',
-        summary: '通过章回式结构呈现本周科研、合作、交流与制度建设进展。',
+        title: metaTitle,
+        subtitle: metaSubtitle,
+        summary: '以章节方式呈现科研进展、协同推进、评审反馈与机制迭代。',
       },
       viewModel: {
         ink: {
           cover: {
-            enTitle: 'Zhongguancun Academy · Weekly Report · Issue No.1',
-            title: '教科人管理中心周报',
-            subTitle: '第一期 · 二〇二六年春',
-            period: '2026年3月27日 — 4月2日',
+            enTitle: 'Research Progress Unit · Weekly Report · Issue No.2',
+            title: '科研协同中心周报',
+            subTitle: '第二期 · 二〇二六年春',
+            period: '2026年4月8日 — 4月14日',
             issuedAt: footer.date,
             unit: footer.issuedBy,
             stats,
@@ -181,7 +179,7 @@
             keyMetrics,
             cooperation: groups.cooperation.slice(0, 6),
             system: groups.system.slice(0, 6),
-            defense: { total: 17, pass: 11, fail: 5, revised: 1, exam: 1 },
+            defense,
           },
           footer,
         },
@@ -191,27 +189,27 @@
       templateId: 'template-04',
       templateName: '控制台仪表盘周报',
       meta: {
-        title: '教科人管理中心周报 · 示例版',
-        subtitle: '中关村两院教科人管理中心 · 2026年4月第1周',
-        summary: '当前进入执行追踪阶段，重点观察跨部门协同效率和外部合作推进度。',
+        title: metaTitle,
+        subtitle: metaSubtitle,
+        summary: '当前进入执行追踪阶段，重点观察课题协同效率与评审节奏。',
       },
       viewModel: {
         dashboardPlus: {
           hero: {
-            title: '教科人管理中心周报',
-            subtitle: '中关村两院教科人管理中心 · 第01期 · 内部资料',
-            issuedAt: '2026.04.02 ISSUED',
-            period: '2026.03.27 — 04.02',
+            title: '科研协同中心周报',
+            subtitle: `${footer.issuedBy} · 第02期 · 内部资料`,
+            issuedAt: '2026.04.14 ISSUED',
+            period: '2026.04.08 — 04.14',
           },
           stats,
           overview,
           groups,
           data: {
             cooperation: groups.cooperation.slice(0, 6),
-            defense: { total: 17, pass: 11, fail: 5, revised: 1, exam: 1 },
+            defense,
             keyMetrics,
           },
-          summaryCounts: { done: 8, progress: 11, pending: 3 },
+          summaryCounts: { done: 7, progress: 10, pending: 4 },
           footer,
         },
       },
@@ -220,28 +218,28 @@
       templateId: 'template-05',
       templateName: '新闻简报周报',
       meta: {
-        title: '教科人管理中心周报 · 示例版',
-        subtitle: '中关村两院教科人管理中心 · 2026年4月第1周',
-        summary: '本周重点成果进入公开发布窗口，国际论坛和对外合作同步推进。',
+        title: metaTitle,
+        subtitle: metaSubtitle,
+        summary: '本周课题推进稳定提升，外部合作与平台优化同步推进。',
       },
       viewModel: {
         news: {
           masthead: {
             brand: footer.issuedBy,
-            date: '2026·04·02',
-            issueLabel: '第 01 期',
+            date: '2026·04·14',
+            issueLabel: '第 02 期',
           },
           ticker: keyMetrics.slice(0, 6).map((item) => ({ label: item.label, value: item.value, unit: item.unit })),
           hero: {
             eyebrow: '本周要览',
-            headline: '五项重大科研成果进入发布窗口',
-            deck: '重点成果、申报收口、国际交流和制度建设四条工作线同步推进，整体节奏稳定。',
+            headline: '重点课题攻关与平台升级进入稳定执行期',
+            deck: '课题、协同、平台三条工作线同步推进，风险项已纳入分级跟踪。',
             stats: stats.slice(0, 4),
           },
           groups,
           data: {
             keyMetrics,
-            defense: { total: 17, pass: 11, fail: 5, revised: 1 },
+            defense,
             cooperation: groups.cooperation.slice(0, 6),
             international: groups.visit.slice(0, 4),
           },
@@ -253,26 +251,26 @@
       templateId: 'template-06',
       templateName: '学术期刊周报',
       meta: {
-        title: '教科人管理中心周报 · 示例版',
-        subtitle: '中关村两院教科人管理中心 · 2026年4月第1周',
-        summary: '本周周报按期刊结构编排，突出摘要、要览、合作推进与签发信息。',
+        title: metaTitle,
+        subtitle: metaSubtitle,
+        summary: '本周周报按期刊结构编排，突出摘要、要览、推进与签发信息。',
       },
       viewModel: {
         journal: {
           header: {
-            title: '教科人管理中心周报 · 示例版',
-            subtitle: '中关村两院教科人管理中心 · 2026年4月第1周',
-            issueLabel: '第 01 期',
+            title: metaTitle,
+            subtitle: metaSubtitle,
+            issueLabel: '第 02 期',
             issuedAt: footer.date,
-            period: '2026年3月27日—4月2日',
-            tags: ['内部协同', '对外合作', '交流互访', '体系建设'],
+            period: '2026年4月8日—4月14日',
+            tags: ['执行推进', '协同联动', '巡检反馈', '机制优化'],
           },
-          abstract: '本周围绕科研组织、合作推进与制度优化三条主线开展工作，形成阶段性成果并保留后续推进接口。',
+          abstract: '本周围绕攻关提效、协同优化与平台治理三条主线开展工作，整体推进节奏可控。',
           stats,
           overview,
           groups,
           data: {
-            defense: { total: 17, pass: 11, fail: 5, revised: 1 },
+            defense,
             cooperation: groups.cooperation.slice(0, 6),
             system: groups.system.slice(0, 6),
           },
@@ -284,23 +282,23 @@
       templateId: 'template-07',
       templateName: '赛博控制台周报',
       meta: {
-        title: '教科人管理中心周报 · 示例版',
-        subtitle: '中关村两院教科人管理中心 · 2026年4月第1周',
-        summary: '系统视角呈现重点成果发布、合作推进与数据分布。',
+        title: metaTitle,
+        subtitle: metaSubtitle,
+        summary: '系统视角呈现课题链路、协同链路与风险分布。',
       },
       viewModel: {
         cyber: {
           hero: {
-            line: 'SYS_INIT: LOADING_REPORT_MODULE_2026.04.02 ... [OK]',
-            subtitle: '中关村两院教科人管理中心 · 第01期',
-            desc: 'REPORT_PERIOD: 2026.03.27 — 2026.04.02 | ISSUED: 2026.04.02 | UNIT: 中关村两院教科人管理中心',
+            line: 'SYS_INIT: LOADING_RESEARCH_REPORT_2026.04.14 ... [OK]',
+            subtitle: `${footer.issuedBy} · 第02期`,
+            desc: `REPORT_PERIOD: 2026.04.08 — 2026.04.14 | ISSUED: 2026.04.14 | UNIT: ${footer.issuedBy}`,
           },
           stats,
           overview,
           groups,
           data: {
             keyMetrics,
-            defense: { total: 17, pass: 11, fail: 5, revised: 1 },
+            defense,
             system: groups.system.slice(0, 5),
             cooperation: groups.cooperation.slice(0, 6),
           },
@@ -312,78 +310,96 @@
       templateId: 'template-08',
       templateName: '分屏杂志周报',
       meta: {
-        title: '教科人管理中心周报 · 示例版',
-        subtitle: '中关村两院教科人管理中心 · 2026年4月第1周',
-        summary: '分屏杂志风格，左侧固定边栏，右侧可滚动内容区，呈现本周科研、合作与数据看板。',
+        title: metaTitle,
+        subtitle: metaSubtitle,
+        summary: '分屏杂志风格，左侧固定边栏，右侧可滚动内容区，呈现执行与数据看板。',
       },
       viewModel: {
         splitMagazine: {
           masthead: {
-            title: '教科人管理中心周报',
-            issue: '第 01 期',
-            foot: '2026-04-02',
+            title: '科研协同中心周报',
+            issue: '第 02 期',
+            foot: '2026-04-14',
           },
-          stats: [
-            { label: '重大科研成果', value: '5', unit: '项', target: 5 },
-            { label: '国家基金申报', value: '34', unit: '项', target: 34 },
-            { label: '国际青年论坛', value: '19', unit: '名', target: 19 },
-            { label: '深澜计划报名', value: '470', unit: '人', target: 470 },
-            { label: '夏令营报名', value: '700', unit: '+', target: 700 },
-          ],
-          overview: [
-            { number: '01', tag: '科研组织', title: '两院重大科研成果评选完成', body: '经过4轮评审，形成5项重点成果推荐名单，进入论坛发布与转化对接阶段。' },
-            { number: '02', tag: '科研申报', title: '国家自然科学基金集中申报收口', body: '完成34项项目申报材料汇总与提交流程，组织工作按时闭环。' },
-            { number: '03', tag: '国际交流', title: '第四届中关村国际青年论坛召开', body: '论坛吸引19名青年学者到场交流，形成多项后续合作议题。' },
-            { number: '04', tag: '学术研讨', title: '清华-两院AI+数学研讨会举办', body: '围绕交叉研究方向展开深度讨论，现场参会师生超过80人。' },
-          ],
-          groups: {
-            internal: [
-              { title: '第一季度推进会', body: '完成51个项目评审并明确后续资源配置。', status: '已完成', progress: 100, tone: 'done' },
-              { title: '重大项目首轮讨论', body: '三学部完成首轮汇报，进入意见收敛阶段。', status: '进行中', progress: 60, tone: 'progress' },
-              { title: '深澜访学计划启动', body: '完成报名收口与首轮遴选，录取结果同步发布。', status: '已完成', progress: 100, tone: 'done' },
-              { title: '2026年夏令营启动', body: '校园大使与导师招募完成，报名持续增长。', status: '进行中', progress: 45, tone: 'progress' },
-            ],
-            cooperation: [
-              { title: '中央民族大学战略合作协议', body: '协议经院务会审理通过，进入执行准备。', status: '已完成', progress: 80, tone: 'done' },
-              { title: '清华大学求真书院合作', body: '围绕联合培养与教师合作立项持续推进。', status: '推进中', progress: 55, tone: 'progress' },
-              { title: '北邮定向招生班共建', body: '已完成首轮意向对接，进入方案整理。', status: '推进中', progress: 50, tone: 'progress' },
-              { title: '北航共建协议', body: '核心条款仍待协商，会签节点后移。', status: '待推进', progress: 40, tone: 'warning' },
-            ],
-            visit: [
-              { title: '中关村国际青年论坛', body: '论坛环节顺利完成，形成后续对接清单。', status: '已完成', progress: 100, tone: 'done' },
-              { title: '香港科技大学合作交流', body: '围绕联培与课程合作形成下一轮研讨计划。', status: '推进中', progress: 45, tone: 'progress' },
-              { title: '首都体育学院访问', body: '双方围绕科研合作与活动联动交换意见。', status: '已完成', progress: 70, tone: 'done' },
-            ],
-            system: [
-              { title: '国际事务联动平台', body: '推动论坛资源共享与外部引流机制建设。', status: '进行中', progress: 40, tone: 'progress' },
-              { title: '国际AI科学家联盟', body: '完成主管沟通与阶段性汇报。', status: '推进中', progress: 30, tone: 'progress' },
-              { title: '课程建设与质量保证', body: '课程评价分析完成，督导机制持续落地。', status: '进行中', progress: 60, tone: 'progress' },
-              { title: '博士研究生实习管理办法', body: '正式印发并进入执行阶段。', status: '已完成', progress: 100, tone: 'done' },
-            ],
-          },
+          stats: stats.slice(0, 5),
+          overview: overview.slice(0, 4),
+          groups,
           data: {
-            keyMetrics: [
-              { label: '重大科研成果', value: '5', unit: '项' },
-              { label: '国家基金申报', value: '34', unit: '项' },
-              { label: '深澜计划报名', value: '470', unit: '人' },
-              { label: '夏令营报名', value: '700', unit: '+' },
-            ],
-            cooperation: [
-              { title: '中央民族大学战略合作协议', progress: 80, tone: 'done' },
-              { title: '清华大学求真书院合作', progress: 55, tone: 'progress' },
-              { title: '北邮定向招生班共建', progress: 50, tone: 'progress' },
-              { title: '北航共建协议', progress: 40, tone: 'warning' },
-            ],
-            defense: { total: 17, pass: 11, fail: 5, revised: 1, exam: 1 },
+            keyMetrics: keyMetrics.slice(0, 4),
+            cooperation: groups.cooperation.slice(0, 4),
+            defense,
           },
-          footer: {
-            recipient: '中关村两院领导班子成员',
-            distribution: '教科人管理中心各部门',
-            editor: '（待填写）',
-            reviewer: '（待填写）',
-            date: '2026年04月02日',
-            dateOnly: '2026-04-02',
+          footer,
+        },
+      },
+    },
+    'template-09': {
+      templateId: 'template-09',
+      templateName: '瑞士网格周报',
+      meta: {
+        title: metaTitle,
+        subtitle: metaSubtitle,
+        summary: '瑞士网格风格展示关键指标、任务进展与风险闭环。',
+      },
+      viewModel: {
+        swissGrid: {
+          masthead: {
+            name: '科研协同中心周报',
+            issue: 'VOL.02',
+            date: '2026-04-14',
+            logo: '研',
+            publisher: `${footer.issuedBy} · 内部资料`,
           },
+          ticker: keyMetrics.slice(0, 6).map((item) => ({ label: item.label, value: `${item.value}${item.unit || ''}` })),
+          stats: stats.slice(0, 5),
+          overview: overview.slice(0, 5),
+          groups,
+          data: {
+            keyMetrics: keyMetrics.slice(0, 6),
+            cooperation: groups.cooperation.slice(0, 6),
+            defense,
+          },
+          footer,
+        },
+      },
+    },
+    'template-11': {
+      templateId: 'template-11',
+      templateName: '新野兽派战情周报',
+      meta: {
+        title: metaTitle,
+        subtitle: metaSubtitle,
+        summary: '海报风战情版式，强调科研推进力度、轨迹与风险闭环。',
+      },
+      viewModel: {
+        neoBrutalPoster: {
+          masthead: {
+            kicker: 'BRUTAL OPS BULLETIN',
+            title: '科研协同中心周报',
+            issue: 'ISSUE 02',
+            period: '2026.04.08 — 04.14',
+            signal: '课题治理与协同链路双线提升',
+            publisher: footer.issuedBy,
+          },
+          lead: {
+            headline: '课题评审与平台联调形成闭环动作',
+            subline: '成果转化、协同时效、平台稳定三项指标同步优化。',
+          },
+          pillars: stats.slice(0, 6),
+          streams: {
+            execution: groups.internal.slice(0, 4),
+            collaboration: groups.cooperation.slice(0, 4),
+            risk: groups.system.slice(0, 4),
+          },
+          timeline: overview.slice(0, 5).map((item) => ({ node: item.number, title: item.title, body: item.body, tag: item.tag })),
+          scoreboard: keyMetrics.slice(0, 6),
+          momentum: [...groups.cooperation, ...groups.system].slice(0, 6).map((item) => ({
+            label: item.title,
+            progress: item.progress,
+            status: item.status,
+            tone: item.tone,
+          })),
+          footer,
         },
       },
     },
@@ -399,7 +415,7 @@
   document.head.appendChild(link)
 
   if (dataNode) {
-    dataNode.textContent = serializePayload(payloadCatalog[templateId] || payloadCatalog['template-01'])
+    dataNode.textContent = serializePayload(payloadCatalog[templateId] || payloadCatalog['template-02'])
   }
 
   const runtimeScript = document.createElement('script')

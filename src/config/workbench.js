@@ -9,9 +9,10 @@ const previewVariantMap = {
   'template-06': 'data-insight',
   'template-08': 'business-pro',
   'template-09': 'swiss-grid',
+  'template-11': 'neo-brutal-poster',
 }
 
-const templateDisplayOrder = ['template-09', 'template-02', 'template-03', 'template-04', 'template-05', 'template-06', 'template-08']
+const templateDisplayOrder = ['template-11', 'template-09', 'template-02', 'template-03', 'template-04', 'template-05', 'template-06', 'template-08']
 const templateDisplayRank = new Map(templateDisplayOrder.map((id, index) => [id, index]))
 
 export const generationModeCatalog = [
@@ -41,7 +42,7 @@ export const styleCatalog = [
 ]
 
 export const departmentCatalog = [
-  { id: 'education-management-center', name: '教科人管理中心', description: '教学、科研与人才条线统筹管理' },
+  { id: 'education-management-center', name: '教学科研管理中心', description: '教学、科研与人才条线统筹管理' },
   { id: 'science-research-center', name: '科学研究中心', description: '课题管线、成果产出、学术平台建设' },
   { id: 'industry-development-center', name: '产业发展中心', description: '产学研合作、成果转化、生态拓展' },
   { id: 'intelligent-innovation-center', name: '智能创新中心', description: 'AI 创新项目、技术中台、产品试点' },

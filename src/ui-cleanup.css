@@ -590,9 +590,11 @@ body::after,
 }
 
 .idle-state {
+  display: grid;
   grid-template-columns: minmax(0, 1.3fr) minmax(240px, 0.7fr);
   gap: 18px;
-  align-items: start;
+  align-items: stretch;
+  min-height: min(760px, calc(100vh - 210px));
 }
 
 .idle-state__main,
@@ -721,6 +723,8 @@ body::after,
 .preview-stage-body.generating-state {
   grid-template-columns: minmax(0, 1fr) minmax(260px, 320px);
   gap: 16px;
+  min-height: min(760px, calc(100vh - 210px));
+  align-items: stretch;
 }
 
 .progress-card,

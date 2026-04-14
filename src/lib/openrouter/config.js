@@ -57,7 +57,7 @@ const STYLE_PROFILES = {
 
 const DEPARTMENT_PROFILES = {
   'education-management-center': {
-    name: '教科人管理中心',
+    name: '教学科研管理中心',
     mission: '统筹教学、科研与人才工作，确保政策与资源协同落地。',
     priorities: ['教学与科研协同推进', '人才引育留用机制', '跨条线任务闭环'],
     keyMetrics: ['重点任务完成率', '人才项目推进数', '政策执行闭环率'],

@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>file2web 模板预览</title>
+  <style id="template-inline-style">__TEMPLATE_STYLE__</style>
+</head>
+<body data-template-id="template-11">
+  <div class="nbp-root">
+    <header class="nbp-hero">
+      <div class="nbp-kicker" id="nbp-kicker">BRUTAL OPS BULLETIN</div>
+      <h1 class="nbp-title" id="nbp-title">科研攻关战情周报</h1>
+      <div class="nbp-meta">
+        <span class="nbp-chip" id="nbp-issue">ISSUE 01</span>
+        <span class="nbp-chip nbp-chip--light" id="nbp-period">2026-04-02</span>
+        <span class="nbp-chip nbp-chip--alert" id="nbp-signal">课题推进节奏稳定</span>
+      </div>
+      <div class="nbp-lead">
+        <div class="nbp-lead__headline" id="nbp-lead">本周科研要点</div>
+        <div class="nbp-lead__subline" id="nbp-subline">本周进展已整理为结构化战情信息。</div>
+      </div>
+    </header>
+
+    <section class="nbp-pillars" id="nbp-pillars"></section>
+
+    <main class="nbp-main">
+      <section class="nbp-panel">
+        <h2>三轨任务</h2>
+        <div class="nbp-streams">
+          <article class="nbp-stream">
+            <h3>执行推进</h3>
+            <div class="nbp-work-list" id="nbp-stream-execution"></div>
+          </article>
+          <article class="nbp-stream">
+            <h3>协同联动</h3>
+            <div class="nbp-work-list" id="nbp-stream-collaboration"></div>
+          </article>
+          <article class="nbp-stream">
+            <h3>风险与机制</h3>
+            <div class="nbp-work-list" id="nbp-stream-risk"></div>
+          </article>
+        </div>
+      </section>
+
+      <section class="nbp-side">
+        <article class="nbp-panel">
+          <h2>推进时间轴</h2>
+          <div class="nbp-timeline" id="nbp-timeline"></div>
+        </article>
+        <article class="nbp-panel">
+          <h2>关键分数板</h2>
+          <div class="nbp-scoreboard" id="nbp-scoreboard"></div>
+          <div class="nbp-momentum" id="nbp-momentum"></div>
+        </article>
+      </section>
+    </main>
+
+    <footer class="nbp-footer" id="nbp-footer"></footer>
+  </div>
+
+  <script id="template-data" type="application/json">__TEMPLATE_DATA__</script>
+  <script id="template-script" type="application/json">__TEMPLATE_SCRIPT__</script>
+  <script>
+    (() => {
+      const styleNode = document.getElementById('template-inline-style')
+      const dataNode = document.getElementById('template-data')
+      const scriptNode = document.getElementById('template-script')
+      const isLivePreview =
+        styleNode?.textContent.includes('__TEMPLATE_STYLE__') ||
+        dataNode?.textContent.includes('__TEMPLATE_DATA__') ||
+        scriptNode?.textContent.includes('__TEMPLATE_SCRIPT__')
+
+      if (isLivePreview) {
+        const loader = document.createElement('script')
+        loader.src = '../_runtime/live-preview.js'
+        loader.dataset.templateId = document.body.dataset.templateId || ''
+        loader.dataset.styleHref = './style.css'
+        loader.dataset.scriptSrc = './app.js'
+        document.body.appendChild(loader)
+        return
+      }
+
+      const runtimeScript = document.createElement('script')
+      runtimeScript.textContent = scriptNode?.textContent || ''
+      document.body.appendChild(runtimeScript)
+    })()
+  </script>
+</body>
+</html>

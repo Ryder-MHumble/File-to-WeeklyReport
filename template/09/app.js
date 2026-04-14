@@ -155,13 +155,13 @@
     const defenseTable = document.getElementById('sw-defense-table')
     const defense = data.defense || {}
     const defenseRows = [
-      { name: '开题通过', value: defense.pass || 0, color: '#1A5A1A' },
-      { name: '未通过', value: defense.fail || 0, color: '#CC1A1A' },
-      { name: '修改后通过', value: defense.revised || 0, color: '#CC7A1A' },
-      { name: '博资考通过', value: defense.exam || 0, color: '#1A2A5A' },
+      { name: '通过评审', value: defense.pass || 0, color: '#1A5A1A' },
+      { name: '待复审', value: defense.fail || 0, color: '#CC1A1A' },
+      { name: '需专项评估', value: defense.revised || 0, color: '#CC7A1A' },
+      { name: '挂起项目', value: defense.exam || 0, color: '#1A2A5A' },
     ]
     const total = Math.max(1, Number(defense.total || 0))
-    if (defenseTitle) defenseTitle.textContent = `博士生答辩结果（共${defense.total || 0}人）`
+    if (defenseTitle) defenseTitle.textContent = `项目评审结果（共${defense.total || 0}单）`
     if (defenseTable) {
       defenseTable.innerHTML = defenseRows
         .map((item) => {

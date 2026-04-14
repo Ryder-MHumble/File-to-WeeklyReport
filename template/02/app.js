@@ -287,10 +287,10 @@
     if (defenseNode) {
       const defense = data.defense || {}
       const defenseRows = [
-        { label: '开题通过', value: Number(defense.pass || 0), color: 'var(--ok)' },
-        { label: '未通过', value: Number(defense.fail || 0), color: 'var(--accent)' },
-        { label: '修改后通过', value: Number(defense.revised || 0), color: 'var(--accent-gold)' },
-        { label: '博资考通过', value: Number(defense.exam || 0), color: 'var(--progress)' },
+        { label: '通过评审', value: Number(defense.pass || 0), color: 'var(--ok)' },
+        { label: '待复审', value: Number(defense.fail || 0), color: 'var(--accent)' },
+        { label: '需专项评估', value: Number(defense.revised || 0), color: 'var(--accent-gold)' },
+        { label: '挂起项目', value: Number(defense.exam || 0), color: 'var(--progress)' },
       ]
       const total = Math.max(Number(defense.total || 0), defenseRows.reduce((sum, item) => sum + item.value, 0), 1)
       defenseNode.innerHTML = defenseRows

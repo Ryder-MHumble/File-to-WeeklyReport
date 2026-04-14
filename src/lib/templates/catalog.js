@@ -108,4 +108,18 @@ export const templateCatalog = [
     audienceTags: ['director', 'executive', 'risk'],
     moduleBlueprint: ['刊头与 ticker', 'KPI 条带', '要览与进展网格', '指标与答辩表', '签发信息'],
   },
+  {
+    id: 'template-11',
+    renderer: 'neo-brutal-poster',
+    name: '野兽战情版',
+    title: '新野兽派战情周报',
+    description: '强调海报式头版、高对比色块与任务战情分区，适合阶段冲刺复盘。',
+    accent: '#FF5A2F',
+    chip: 'BRUTAL/11',
+    focus: '适合冲刺阶段、战役执行与跨团队协同周报。',
+    bestFor: '战情复盘 / 冲刺周会',
+    departmentTags: ['operations', 'strategy', 'comprehensive', 'industry'],
+    audienceTags: ['executive', 'operations', 'director'],
+    moduleBlueprint: ['宣言头版', '核心战绩', '三轨任务', '时间轴', '签发信息'],
+  },
 ]

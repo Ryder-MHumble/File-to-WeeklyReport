@@ -62,6 +62,11 @@ export function buildTemplatePayload(templateMeta, document, generatedAt) {
     return payload
   }
 
+  if (templateMeta.id === 'template-11') {
+    payload.viewModel.neoBrutalPoster = buildNeoBrutalPosterViewModel(shared)
+    return payload
+  }
+
   return payload
 }
 
@@ -223,6 +228,47 @@ function buildSwissGridViewModel(shared) {
       cooperation: shared.cooperationProgress.slice(0, 6),
       defense: shared.defense,
     },
+    footer: shared.footer,
+  }
+}
+
+function buildNeoBrutalPosterViewModel(shared) {
+  const issueNumber = String(shared.metaLine.issueLabel.match(/\d+/)?.[0] || '1').padStart(2, '0')
+  const progressPool = [...shared.cooperationProgress, ...shared.systemProgress, ...shared.visitProgress]
+  const timeline = shared.overview.slice(0, 5).map((item, index) => ({
+    node: item.number || String(index + 1).padStart(2, '0'),
+    title: item.title,
+    body: item.body,
+    tag: item.tag,
+  }))
+
+  return {
+    masthead: {
+      kicker: 'BRUTAL OPS BULLETIN',
+      title: shared.metaLine.title || '科研攻关战情周报',
+      issue: `ISSUE ${issueNumber}`,
+      period: shared.metaLine.periodText,
+      signal: shared.stats[0]?.detail || '课题推进节奏稳定',
+      publisher: shared.footer.issuedBy || '自动生成周报',
+    },
+    lead: {
+      headline: shared.overview[0]?.title || shared.metaLine.title || '本周科研要点',
+      subline: shared.metaLine.summary || '本周进展已整理为结构化战情信息。',
+    },
+    pillars: shared.stats.slice(0, 6),
+    streams: {
+      execution: shared.groups.internal.slice(0, 4),
+      collaboration: shared.groups.cooperation.slice(0, 4),
+      risk: shared.groups.system.slice(0, 4),
+    },
+    timeline,
+    scoreboard: shared.keyMetrics.slice(0, 6),
+    momentum: progressPool.slice(0, 6).map((item, index) => ({
+      label: item.title || item.status || `推进事项 ${index + 1}`,
+      progress: item.progress || 0,
+      status: item.status || '进行中',
+      tone: item.tone || 'progress',
+    })),
     footer: shared.footer,
   }
 }

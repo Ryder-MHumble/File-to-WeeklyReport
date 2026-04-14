@@ -1803,18 +1803,41 @@ select {
   animation: framePop 0.45s var(--ease-spring) both;
 }
 
+.preview-stage-body,
 .idle-state,
 .generating-state {
-  min-height: 100%;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
+  width: 100%;
+  flex: 1 1 auto;
+  min-height: min(760px, calc(100vh - 210px));
 }
 
-.idle-state p {
-  margin-top: 18px;
-  color: var(--text-secondary);
+.idle-state {
+  display: grid;
+  grid-template-columns: minmax(0, 1.3fr) minmax(280px, 0.7fr);
+  gap: 18px;
+  align-items: stretch;
+}
+
+.idle-state__main {
+  min-width: 0;
+  display: grid;
+  align-content: start;
+  gap: 16px;
+}
+
+.idle-state__eyebrow {
+  display: inline-block;
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #8ebde8;
+}
+
+.idle-state__aside {
+  min-width: 0;
+  display: grid;
+  align-content: start;
+  gap: 14px;
 }
 
 .orbital-wrapper {
@@ -1897,12 +1920,11 @@ select {
 }
 
 .recent-reports {
-  margin-top: 26px;
-  width: min(360px, 100%);
+  width: 100%;
 }
 
 .idle-template-hint {
-  margin-top: 14px;
+  margin-top: 6px;
   font-size: 11px;
   color: var(--text-secondary);
 }
@@ -1999,6 +2021,70 @@ select {
     inset 0 0 0 1px rgba(255, 255, 255, 0.04),
     inset 0 -26px 44px rgba(32, 126, 224, 0.1),
     0 26px 58px rgba(2, 8, 24, 0.62);
+}
+
+.preview-stage-body.generating-state .progress-card {
+  width: 100%;
+  min-height: 100%;
+}
+
+.preview-stage-body.generating-state {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(260px, 320px);
+  gap: 16px;
+  align-items: stretch;
+}
+
+.preview-placeholder-panel {
+  display: grid;
+  align-content: start;
+  gap: 14px;
+  padding: 18px;
+  border-radius: 16px;
+}
+
+.preview-placeholder-panel__header {
+  display: grid;
+  gap: 6px;
+}
+
+.preview-placeholder-panel__header strong {
+  font-size: 16px;
+  line-height: 1.35;
+}
+
+.preview-placeholder-device {
+  min-height: 220px;
+  border-radius: 14px;
+  border: 1px solid rgba(132, 152, 180, 0.14);
+  background: rgba(10, 17, 28, 0.58);
+  padding: 14px;
+  display: grid;
+}
+
+.preview-placeholder-document {
+  border-radius: 12px;
+  border: 1px solid rgba(186, 206, 232, 0.18);
+  background:
+    linear-gradient(180deg, rgba(220, 232, 248, 0.08), rgba(220, 232, 248, 0.03)),
+    repeating-linear-gradient(180deg, transparent 0 14px, rgba(180, 205, 235, 0.08) 14px 15px);
+}
+
+.progress-activity {
+  margin-top: 4px;
+  padding: 12px 14px;
+  border-radius: 14px;
+  border: 1px solid rgba(132, 152, 180, 0.14);
+  background: rgba(10, 17, 28, 0.56);
+}
+
+.progress-activity strong {
+  display: block;
+  margin-bottom: 8px;
+}
+
+.progress-activity__item + .progress-activity__item {
+  margin-top: 6px;
 }
 
 .progress-card::before {

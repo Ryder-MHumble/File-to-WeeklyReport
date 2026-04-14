@@ -57,6 +57,14 @@ const templateAssetLoaders = {
     ])
     return { html: html.default, css: css.default, js: js.default }
   },
+  'template-11': async () => {
+    const [html, css, js] = await Promise.all([
+      import('../../../template/11/index.html?raw'),
+      import('../../../template/11/style.css?raw'),
+      import('../../../template/11/app.js?raw'),
+    ])
+    return { html: html.default, css: css.default, js: js.default }
+  },
 }
 
 export async function loadTemplateAsset(templateId) {
