@@ -1,15 +1,18 @@
 # Doc2Brief
 
-Doc2Brief 是一个纯前端的 `file / text -> weekly report HTML` 生成平台，面向“周报、简报、管理汇报”场景，强调稳定结构化、模板化渲染与可导出的页面交付。
+Doc2Brief 是一个 `file / text -> weekly report HTML / poster` 生成平台，面向“周报、简报、管理汇报、宣传海报”场景，强调稳定结构化、模板化渲染与可交付输出。
 
 ## 1. 核心定位
 
 - 输入：上传文件或直接粘贴正文
-- 处理：抽取文本 -> 结构化整理 -> 模板映射
-- 输出：可预览、可切换模板、可导出 HTML 的周报页面
+- 处理：抽取文本 -> 结构化整理 -> 模板映射 / 海报 brief 编排
+- 输出：可预览、可切换模板、可导出 HTML 的周报页面，或可下载的宣传海报
 
 当前版本优先保障主链路可跑通：
 `上传 -> 抽取 -> 结构化 -> 模板预览 -> HTML 导出`
+
+并新增海报链路：
+`上传 -> 抽取 -> 海报 brief -> 图片模型 -> 海报下载`
 
 ## 2. 功能总览
 
@@ -21,6 +24,15 @@ Doc2Brief 是一个纯前端的 `file / text -> weekly report HTML` 生成平台
 
 ### 2.2 生成模式
 
+- `周报模式`
+  - 支持 `structured-template` / `llm-html`
+  - 输出模板化周报页面与 HTML 导出
+- `海报模式`
+  - 支持研究院对内 / 对外宣传海报生成
+  - 先提炼 brief，再调用 OpenRouter 图片模型输出单张海报
+
+### 2.3 周报生成模式
+
 - `structured-template`（推荐）
   - 先结构化抽取，再映射模板渲染
   - 输出稳定，适合正式场景
@@ -28,7 +40,38 @@ Doc2Brief 是一个纯前端的 `file / text -> weekly report HTML` 生成平台
   - 模型直接生成完整 HTML
   - 表达更自由，同时带质量闸门与自动回退
 
-### 2.3 模板系统（内置）
+### 2.4 海报模式
+
+- 海报场景：
+  - 对外成果宣传
+  - 院内宣传快报
+  - 活动通知海报
+  - 制度通知宣导
+  - 招聘招募海报
+  - 学术会议海报
+- 内置风格：
+  - 学院旗舰版
+  - 制度极简版
+  - 科研快讯版
+  - 创新发布版
+  - 活动典礼版
+  - 招募动员版
+- 输出控制：
+  - 比例：`4:5 / 3:4 / 1:1 / 16:9 / 9:16`
+  - 尺寸：`1K / 2K / 4K`
+  - 敏感表达模式：适合正式通知、成果宣传和内宣场景
+
+海报生成采用两段式链路：
+
+- `rawText -> poster brief JSON`
+- `brief + style pack -> image prompt -> OpenRouter 图片模型`
+
+海报模式具备回退机制：
+
+- 未配置 `OPENROUTER_API_KEY`：回退到本地 SVG 草图
+- 模型调用失败：保留 brief，并回退到本地草图，便于继续联调与验收
+
+### 2.5 模板系统（内置）
 
 当前内置 9 套模板（`template/01` ~ `template/09`）：
 
@@ -54,18 +97,19 @@ Doc2Brief 是一个纯前端的 `file / text -> weekly report HTML` 生成平台
 - `__TEMPLATE_SCRIPT__`
 - `__TEMPLATE_DATA__`
 
-### 2.4 上下文编排
+### 2.6 上下文编排
 
 - 风格：正式稳重 / 数据导向 / 叙事表达
 - 部门：支持多部门语义配置（如科研、行政、战略等）
 - 受众：院长/主任、分管领导、执行负责人、风控负责人
 - 敏感表达模式：自动降低措辞强度，适配正式汇报
 
-### 2.5 输出与交付
+### 2.7 输出与交付
 
 - 页面预览：桌面 / 手机双视图
 - 报告动作：全屏、复制链接、导出 HTML
 - 最近报告：本地缓存最近生成记录
+- 海报动作：海报预览、下载图片、最近生成记录
 
 ## 3. 端到端处理链路
 
@@ -73,9 +117,9 @@ Doc2Brief 是一个纯前端的 `file / text -> weekly report HTML` 生成平台
 文件/文本输入
   -> 文件抽取（PDF/DOCX/TXT/MD/CSV）
   -> 原文清洗与截断
-  -> AI 编排（结构化 or HTML 直出）
-  -> 模板注入与渲染
-  -> 预览与导出
+  -> AI 编排（结构化 / HTML 直出 / 海报 brief）
+  -> 模板注入与渲染 或 图片模型生成
+  -> 周报预览与导出 / 海报预览与下载
 ```
 
 关键回退机制：
@@ -83,6 +127,7 @@ Doc2Brief 是一个纯前端的 `file / text -> weekly report HTML` 生成平台
 - 未配置 API Key：自动回退到本地结构化
 - 结构化异常：自动重试 + JSON 修复
 - HTML 直出质量不达标：自动修复，不通过则回退“结构化+模板”方案
+- 海报图片生成失败：自动回退到本地 SVG 草图
 
 ## 4. 可观测性设计
 
@@ -97,6 +142,7 @@ Doc2Brief 是一个纯前端的 `file / text -> weekly report HTML` 生成平台
 
 - 文件抽取
 - 模型编排（结构化、润色、HTML 直出、修复、降级）
+- 海报编排（brief、图片生成、草图回退）
 - 转换编排（生成流程主控）
 
 ## 5. 技术栈
@@ -139,6 +185,21 @@ npm run dev
 
 - `http://127.0.0.1:5173`
 
+如果你需要在 `vite` 开发环境里验证海报模式的真实 OpenRouter 代理，有两种方式：
+
+1. 单独启动生产服务端代理，并在 `.env` 中设置：
+
+```bash
+VITE_REPORT_API_BASE_URL=http://127.0.0.1:5173
+```
+
+2. 直接构建后启动一体化服务：
+
+```bash
+npm run build
+npm run start:prod
+```
+
 ### 6.5 构建产物
 
 ```bash
@@ -174,6 +235,8 @@ npm run build
 - `OPENROUTER_HTML_MODEL`：HTML 直出模型
 - `OPENROUTER_STRUCTURED_MODEL`：结构化抽取模型
 - `OPENROUTER_POLISH_MODEL`：结构化润色模型（可选，留空则关闭额外润色调用）
+- `OPENROUTER_POSTER_BRIEF_MODEL`：海报 brief 提炼模型
+- `OPENROUTER_POSTER_IMAGE_MODEL`：海报图片模型，默认 `google/gemini-3.1-flash-image-preview`
 - `OPENROUTER_HTML_MAX_TOKENS`：HTML 模式最大 token（可选）
 - `OPENROUTER_PROMPT_PROFILE`：Prompt 策略（`auto / v1 / v2`，默认 `auto`）
 

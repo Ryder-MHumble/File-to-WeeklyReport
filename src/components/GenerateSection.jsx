@@ -1,5 +1,16 @@
-export function GenerateSection({ disabled, isGenerating, onGenerateAction, generationMode, isReportReady }) {
+export function GenerateSection({
+  disabled,
+  isGenerating,
+  onGenerateAction,
+  generationMode,
+  isReportReady,
+  idleLabel = '',
+  loadingLabel = 'AI 深度分析中...',
+  resetLabel = '清空报告页面',
+}) {
   const inResetMode = isReportReady && !isGenerating
+  const resolvedIdleLabel =
+    idleLabel || (generationMode === 'llm-html' ? '生成 LLM 报告' : generationMode === 'poster' ? '生成海报' : '生成可视化报告')
   return (
     <button
       aria-busy={isGenerating}
@@ -12,10 +23,10 @@ export function GenerateSection({ disabled, isGenerating, onGenerateAction, gene
       {isGenerating ? (
         <>
           <span className="button-spinner" />
-          <span>AI 深度分析中...</span>
+          <span>{loadingLabel}</span>
         </>
       ) : (
-        <span>{inResetMode ? '清空报告页面' : generationMode === 'llm-html' ? '生成 LLM 报告' : '生成可视化报告'}</span>
+        <span>{inResetMode ? resetLabel : resolvedIdleLabel}</span>
       )}
     </button>
   )

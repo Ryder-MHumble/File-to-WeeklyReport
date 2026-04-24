@@ -169,6 +169,26 @@ body::after,
   gap: 8px;
 }
 
+.product-mode-switch {
+  gap: 6px;
+  border-color: rgba(132, 152, 180, 0.16);
+  background: rgba(12, 20, 31, 0.68);
+}
+
+.product-mode-switch button {
+  border-color: rgba(132, 152, 180, 0.14);
+  background: rgba(14, 22, 35, 0.7);
+  color: #8ea0b7;
+  box-shadow: none;
+}
+
+.product-mode-switch button.is-active {
+  background: rgba(93, 149, 214, 0.18);
+  border-color: rgba(118, 173, 235, 0.28);
+  color: #eef6ff;
+  box-shadow: none;
+}
+
 .mode-tabs button,
 .device-toggle button,
 .compact-mode-switch button {
@@ -835,6 +855,20 @@ body::after,
 .generate-action-button {
   border-radius: 14px;
   box-shadow: 0 16px 30px rgba(12, 48, 92, 0.26);
+}
+
+.poster-style-lead,
+.poster-progress-panel,
+.poster-inspector-card,
+.poster-artboard-shell {
+  border-color: rgba(132, 152, 180, 0.16);
+  background: rgba(12, 19, 30, 0.78);
+  box-shadow: none;
+}
+
+.poster-keypoints span {
+  border-color: rgba(132, 152, 180, 0.16);
+  background: rgba(34, 62, 96, 0.48);
 }
 
 @media (max-width: 1480px) {
