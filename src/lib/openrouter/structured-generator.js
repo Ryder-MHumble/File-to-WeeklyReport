@@ -22,9 +22,16 @@ export async function generateStructuredReport(params) {
   const warnings = []
   const polishTimeoutMs = 18000
   const model = OPENROUTER_STRUCTURED_MODEL
-  const polishModel = OPENROUTER_POLISH_MODEL || OPENROUTER_STRUCTURED_MODEL
+  const polishModel = OPENROUTER_POLISH_MODEL || ''
+  const polishEnabled = Boolean(polishModel)
   const promptStrategy = resolvePromptProfile({ mode: 'structured-template', rawText, context })
   const promptProfile = promptStrategy.profile
+  const stageDurationsMs = {
+    primary: 0,
+    retry: 0,
+    repair: 0,
+    polish: 0,
+  }
 
   const primaryMaxTokens = chooseMaxTokens(rawText, 'structured-template')
   const primaryRequestPayload = {
@@ -47,6 +54,8 @@ export async function generateStructuredReport(params) {
       department: context.department,
       audience: context.audience,
       maxTokens: primaryRequestPayload.max_tokens,
+      polishEnabled,
+      polishModel: polishModel || '(disabled)',
       promptProfile,
       promptSource: promptStrategy.source,
       promptBucket: promptStrategy.bucket,
@@ -81,12 +90,14 @@ export async function generateStructuredReport(params) {
   let polishSelected = false
 
   try {
+    const primaryStartedAt = performance.now()
     const responsePayload = {
       primary: await requestOpenRouter(primaryRequestPayload),
       retry: null,
       repair: null,
       polish: null,
     }
+    stageDurationsMs.primary = measureElapsedMs(primaryStartedAt)
     let parsed
 
     try {
@@ -120,7 +131,9 @@ export async function generateStructuredReport(params) {
         timestamp: new Date().toISOString(),
       })
 
+      const retryStartedAt = performance.now()
       responsePayload.retry = await requestOpenRouter(retryRequestPayload)
+      stageDurationsMs.retry = measureElapsedMs(retryStartedAt)
       const retryBrokenOutput = resolveBrokenOutput(responsePayload.retry)
 
       try {
@@ -152,7 +165,9 @@ export async function generateStructuredReport(params) {
           timestamp: new Date().toISOString(),
         })
 
+        const repairStartedAt = performance.now()
         responsePayload.repair = await requestOpenRouter(repairRequestPayload)
+        stageDurationsMs.repair = measureElapsedMs(repairStartedAt)
 
         try {
           const repairContent = extractResponseContent(responsePayload.repair)
@@ -169,80 +184,96 @@ export async function generateStructuredReport(params) {
     let finalDocument = normalized
     const baseScore = scoreDocumentRichness(normalized)
 
-    const polishRequestPayload = {
-      model: polishModel,
-      messages: buildStructuredPolishMessages({
-        rawText,
-        styleMeta,
-        templateMeta,
-        context,
-        promptProfile,
-        structuredDraft: resolveStructuredDraft(normalized),
-      }),
-      temperature: 0.15,
-      max_tokens: Math.max(3200, Math.floor(primaryMaxTokens * 1.2)),
-    }
-    requestPayload.polish = polishRequestPayload
-
-    pushLog({
-      kind: 'business',
-      module: '模型编排',
-      event: '结构化润色输入',
-      payload: {
+    if (polishEnabled) {
+      const polishRequestPayload = {
         model: polishModel,
-        rawLength: rawText.length,
-        baseScore,
-        maxTokens: polishRequestPayload.max_tokens,
-        timeoutMs: polishTimeoutMs,
-        promptProfile,
-      },
-      timestamp: new Date().toISOString(),
-    })
-
-    try {
-      pushLog({
-        kind: 'system',
-        module: '模型编排',
-        event: '结构化润色补全开始',
-        payload: { model: polishModel, timeoutMs: polishTimeoutMs },
-        timestamp: new Date().toISOString(),
-      })
-
-      responsePayload.polish = await requestOpenRouter(polishRequestPayload, { timeoutMs: polishTimeoutMs })
-      const polishedContent = extractResponseContent(responsePayload.polish)
-      const polishedParsed = parseJsonObject(polishedContent)
-      const polishedDocument = normalizeDocument(polishedParsed, rawText, sensitiveMode)
-      const polishScore = scoreDocumentRichness(polishedDocument)
-      usedPolish = true
-
-      if (polishScore >= baseScore) {
-        finalDocument = polishedDocument
-        polishSelected = true
+        messages: buildStructuredPolishMessages({
+          rawText,
+          styleMeta,
+          templateMeta,
+          context,
+          promptProfile,
+          structuredDraft: resolveStructuredDraft(normalized),
+        }),
+        temperature: 0.15,
+        max_tokens: Math.max(3200, Math.floor(primaryMaxTokens * 1.2)),
       }
+      requestPayload.polish = polishRequestPayload
 
       pushLog({
         kind: 'business',
         module: '模型编排',
-        event: '结构化润色输出',
+        event: '结构化润色输入',
         payload: {
           model: polishModel,
-          usedPolish,
-          polishSelected,
+          rawLength: rawText.length,
           baseScore,
-          polishScore,
+          maxTokens: polishRequestPayload.max_tokens,
+          timeoutMs: polishTimeoutMs,
+          promptProfile,
         },
         timestamp: new Date().toISOString(),
       })
-    } catch (error) {
-      polishError = error instanceof Error ? error.message : '润色阶段异常'
-      if (polishError.includes('超时')) {
-        warnings.push(`结构化润色超时（>${Math.floor(polishTimeoutMs / 1000)} 秒），已保留主结果。`)
+
+      try {
+        pushLog({
+          kind: 'system',
+          module: '模型编排',
+          event: '结构化润色补全开始',
+          payload: { model: polishModel, timeoutMs: polishTimeoutMs },
+          timestamp: new Date().toISOString(),
+        })
+
+        const polishStartedAt = performance.now()
+        responsePayload.polish = await requestOpenRouter(polishRequestPayload, { timeoutMs: polishTimeoutMs })
+        stageDurationsMs.polish = measureElapsedMs(polishStartedAt)
+        const polishedContent = extractResponseContent(responsePayload.polish)
+        const polishedParsed = parseJsonObject(polishedContent)
+        const polishedDocument = normalizeDocument(polishedParsed, rawText, sensitiveMode)
+        const polishScore = scoreDocumentRichness(polishedDocument)
+        usedPolish = true
+
+        if (polishScore >= baseScore) {
+          finalDocument = polishedDocument
+          polishSelected = true
+        }
+
+        pushLog({
+          kind: 'business',
+          module: '模型编排',
+          event: '结构化润色输出',
+          payload: {
+            model: polishModel,
+            usedPolish,
+            polishSelected,
+            baseScore,
+            polishScore,
+            stageDurationsMs: { polish: stageDurationsMs.polish },
+          },
+          timestamp: new Date().toISOString(),
+        })
+      } catch (error) {
+        polishError = error instanceof Error ? error.message : '润色阶段异常'
+        if (polishError.includes('超时')) {
+          warnings.push(`结构化润色超时（>${Math.floor(polishTimeoutMs / 1000)} 秒），已保留主结果。`)
+        }
+        pushLog({
+          kind: 'system',
+          module: '模型编排',
+          event: '结构化润色失败，保留主结果',
+          payload: { model: polishModel, error: polishError, timeoutMs: polishTimeoutMs },
+          timestamp: new Date().toISOString(),
+        })
       }
+    } else {
       pushLog({
         kind: 'system',
         module: '模型编排',
-        event: '结构化润色失败，保留主结果',
-        payload: { model: polishModel, error: polishError, timeoutMs: polishTimeoutMs },
+        event: '结构化润色已跳过',
+        payload: {
+          reason: '未配置润色模型',
+          baseScore,
+        },
         timestamp: new Date().toISOString(),
       })
     }
@@ -263,9 +294,11 @@ export async function generateStructuredReport(params) {
         usedRepair,
         repairError,
         usedPolish,
+        polishEnabled,
         polishSelected,
         polishError,
         warningCount: warnings.length,
+        stageDurationsMs,
         promptProfile,
       },
       timestamp: new Date().toISOString(),
@@ -274,7 +307,7 @@ export async function generateStructuredReport(params) {
       kind: 'system',
       module: '模型编排',
       event: '结构化请求完成',
-      payload: { elapsedMs, model },
+      payload: { elapsedMs, model, stageDurationsMs, polishEnabled },
       timestamp: new Date().toISOString(),
     })
 
@@ -296,7 +329,17 @@ export async function generateStructuredReport(params) {
       kind: 'error',
       module: '模型编排',
       event: '结构化请求失败，降级',
-      payload: { error: message, model, usedRetry, usedRepair, repairError, usedPolish, polishError },
+      payload: {
+        error: message,
+        model,
+        usedRetry,
+        usedRepair,
+        repairError,
+        usedPolish,
+        polishEnabled,
+        polishError,
+        stageDurationsMs,
+      },
       timestamp: new Date().toISOString(),
     })
 
@@ -308,6 +351,10 @@ export async function generateStructuredReport(params) {
       responsePayload: { fallback: true, error: message },
     }
   }
+}
+
+function measureElapsedMs(startedAt) {
+  return Number((performance.now() - startedAt).toFixed(2))
 }
 
 function resolveBrokenOutput(payload) {

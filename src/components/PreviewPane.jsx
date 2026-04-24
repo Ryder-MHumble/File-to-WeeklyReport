@@ -27,12 +27,57 @@ function buildGenerationSteps(activeStep, generationMode) {
   })
 }
 
-function extractIframeHtml(iframeElement) {
+function removeAttributeFromTree(root, attributeName) {
+  if (!root) {
+    return
+  }
+
+  if (root.hasAttribute?.(attributeName)) {
+    root.removeAttribute(attributeName)
+  }
+
+  root.querySelectorAll?.(`[${attributeName}]`).forEach((node) => {
+    node.removeAttribute(attributeName)
+  })
+}
+
+function removeAttributeByPrefix(root, prefix) {
+  if (!root) {
+    return
+  }
+
+  const nodes = [root, ...root.querySelectorAll?.('*')]
+  nodes.forEach((node) => {
+    Array.from(node.attributes || []).forEach((attribute) => {
+      if (attribute.name.startsWith(prefix)) {
+        node.removeAttribute(attribute.name)
+      }
+    })
+  })
+}
+
+function extractIframeHtml(iframeElement, options = {}) {
+  const { freezeRuntime = false } = options
   const documentElement = iframeElement?.contentDocument?.documentElement
   if (!documentElement) {
     return ''
   }
-  return `<!doctype html>\n${documentElement.outerHTML}`
+
+  if (!freezeRuntime) {
+    return `<!doctype html>\n${documentElement.outerHTML}`
+  }
+
+  const frozenRoot = documentElement.cloneNode(true)
+  frozenRoot.querySelector('#__docs2brief_inline_edit_style__')?.remove()
+  removeAttributeFromTree(frozenRoot, 'contenteditable')
+  removeAttributeByPrefix(frozenRoot, 'data-immersive-translate')
+
+  // 模板页重新加载时会按原始 JSON 再次渲染，必须在保存编辑结果前冻结运行态。
+  if (frozenRoot.querySelector('#template-data') || frozenRoot.querySelector('#template-script')) {
+    frozenRoot.querySelectorAll('script').forEach((node) => node.remove())
+  }
+
+  return `<!doctype html>\n${frozenRoot.outerHTML}`
 }
 
 function toggleIframeEditing(iframeElement, enabled) {
@@ -194,7 +239,7 @@ export function PreviewPane({
     scheduleFrameMeasurement()
   }
 
-  const captureCurrentHtml = () => extractIframeHtml(iframeRef.current)
+  const captureCurrentHtml = () => extractIframeHtml(iframeRef.current, { freezeRuntime: true })
 
   const handleEditToggle = () => {
     onEditStart()

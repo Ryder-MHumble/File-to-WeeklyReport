@@ -582,6 +582,7 @@ export function useWorkbenchController() {
     setIsEditMode(false)
     setCopiedReady(false)
     setReportLink('')
+    setEditorFrameVersion((prev) => prev + 1)
     editChangeCountRef.current = 0
 
     pushLog({

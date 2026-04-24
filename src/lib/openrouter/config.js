@@ -1,7 +1,7 @@
 const DEFAULT_BASE_URL = 'https://openrouter.ai/api/v1'
 const DEFAULT_HTML_MODEL = 'minimax/minimax-m2.7'
 const DEFAULT_STRUCTURED_MODEL = 'minimax/minimax-m2.7'
-const DEFAULT_POLISH_MODEL = 'minimax/minimax-m2.7'
+const DEFAULT_POLISH_MODEL = ''
 const DEFAULT_PROMPT_PROFILE = 'auto'
 const DEFAULT_HTML_MAX_TOKENS_FALLBACK = 7200
 const PROMPT_PROFILE_SET = new Set(['auto', 'v1', 'v2'])
@@ -22,7 +22,7 @@ export const OPENROUTER_STRUCTURED_MODEL =
   import.meta.env.MINIMAX_MODEL ||
   DEFAULT_STRUCTURED_MODEL
 export const OPENROUTER_POLISH_MODEL =
-  import.meta.env.OPENROUTER_POLISH_MODEL || import.meta.env.MINIMAX_POLISH_MODEL || DEFAULT_POLISH_MODEL
+  normalizeOptionalString(import.meta.env.OPENROUTER_POLISH_MODEL || import.meta.env.MINIMAX_POLISH_MODEL || DEFAULT_POLISH_MODEL)
 export const OPENROUTER_API_KEY = import.meta.env.OPENROUTER_API_KEY || import.meta.env.MINIMAX_API_KEY || ''
 export const OPENROUTER_HTML_MAX_TOKENS = normalizePositiveInteger(
   import.meta.env.OPENROUTER_HTML_MAX_TOKENS || import.meta.env.MINIMAX_HTML_MAX_TOKENS,
@@ -226,6 +226,10 @@ function normalizePositiveInteger(value) {
     return 0
   }
   return parsed
+}
+
+function normalizeOptionalString(value) {
+  return typeof value === 'string' ? value.trim() : ''
 }
 
 function simpleHash(value) {

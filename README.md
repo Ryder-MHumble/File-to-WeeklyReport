@@ -173,7 +173,7 @@ npm run build
 - `OPENROUTER_BASE_URL`：网关地址，默认 `https://openrouter.ai/api/v1`
 - `OPENROUTER_HTML_MODEL`：HTML 直出模型
 - `OPENROUTER_STRUCTURED_MODEL`：结构化抽取模型
-- `OPENROUTER_POLISH_MODEL`：结构化润色模型（可选）
+- `OPENROUTER_POLISH_MODEL`：结构化润色模型（可选，留空则关闭额外润色调用）
 - `OPENROUTER_HTML_MAX_TOKENS`：HTML 模式最大 token（可选）
 - `OPENROUTER_PROMPT_PROFILE`：Prompt 策略（`auto / v1 / v2`，默认 `auto`）
 

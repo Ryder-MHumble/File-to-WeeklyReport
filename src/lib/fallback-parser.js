@@ -131,13 +131,24 @@ function normalizeText(value) {
 }
 
 function detectTitle(lines) {
-  const reportLine = lines.find((line) => /周报|简报|汇报/.test(line) && line.length <= 60)
-  if (reportLine) {
-    return reportLine
+  const titleLines = lines.filter((line) => line.length >= 4 && line.length <= 60).slice(0, 6)
+  const explicitReportLine = titleLines.find((line) => /周报|简报|汇报/.test(line) && !isWeakReportTitle(line))
+  if (explicitReportLine) {
+    return explicitReportLine
   }
 
-  const candidate = lines.find((line) => line.length >= 4 && line.length <= 40)
-  return candidate || '未命名周报'
+  const strongCandidate = titleLines.find((line) => isLikelyTitleLine(line) && !isWeakReportTitle(line))
+  if (strongCandidate) {
+    return ensureReportSuffix(strongCandidate)
+  }
+
+  const weakReportLine = titleLines.find((line) => /周报|简报|汇报/.test(line))
+  if (weakReportLine) {
+    return weakReportLine
+  }
+
+  const candidate = titleLines.find((line) => isLikelyTitleLine(line))
+  return candidate ? ensureReportSuffix(candidate) : '未命名周报'
 }
 
 function splitLongLines(lines) {
@@ -172,4 +183,45 @@ function splitLongLines(lines) {
   })
 
   return next
+}
+
+function isWeakReportTitle(value) {
+  const candidate = normalizeTitleCandidate(value)
+  if (!candidate || !/(周报|简报|汇报|报告)/.test(candidate)) {
+    return false
+  }
+
+  const signal = candidate
+    .replace(/(工作|项目|科研|研发|课题|部门|团队|小组|情况|进展|总结|汇总|专项|专题|内部|阶段性?)/g, ' ')
+    .replace(/(周报|简报|汇报|报告)/g, ' ')
+    .replace(/[^\u4e00-\u9fa5A-Za-z0-9]+/g, '')
+
+  return signal.length < 4
+}
+
+function normalizeTitleCandidate(value) {
+  return String(value || '')
+    .replace(/[（(【\[][^）)】\]]*[）)】\]]/g, ' ')
+    .replace(/\b\d{4}[./-]\d{1,2}(?:[./-]\d{1,2})?\b/g, ' ')
+    .replace(/第?\s*\d+\s*(?:周|期|月|季度)/g, ' ')
+    .replace(/(本周|本月|本期|周度|月度|季度|年度|双周)/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim()
+}
+
+function isLikelyTitleLine(value) {
+  const candidate = normalizeTitleCandidate(value)
+  if (!candidate || candidate.length > 36) {
+    return false
+  }
+
+  if (/[。！？；]/.test(candidate)) {
+    return false
+  }
+
+  return !/^(本周|下周|本月|需|请|完成|推进|继续|围绕|针对|根据|关于本周)/.test(candidate)
+}
+
+function ensureReportSuffix(value) {
+  return /(周报|简报|汇报|报告)$/.test(value) ? value : `${value}周报`
 }

@@ -8,6 +8,43 @@ function isSourceFirstDepartment(departmentId) {
   return departmentId === 'party-ideology-supervision-center'
 }
 
+function getNormalizedTextLength(...texts) {
+  const mergedText = texts.find((text) => typeof text === 'string' && text.trim()) || ''
+  return mergedText.replace(/\s+/g, '').length
+}
+
+function getStructuredQualityRules() {
+  return [
+    '- title 必须具体指向本期核心主题、项目、事项或结果，禁止使用“周报”“工作周报”“科研项目周报”“工作总结”等泛标题，也不要只写“XX部门周报”。',
+    '- subtitle 只补充周期、范围、对象或阶段信息，例如“2026年4月第4周｜平台组｜联调阶段”；不得复述 title，不得与 title 仅做近义改写。',
+    '- summary、sections.description、items.body 必须优先写清事实动作、关键结果、当前风险或下一步，避免“稳步推进”“持续优化”“取得良好成效”“按计划开展”等空泛套话。',
+    '- 信息不足时减少条目数量或留空，不得通过拆分同义句、重复表述或无实质信息的总结来硬凑完整感。',
+  ]
+}
+
+function getStructuredDensityRules(...texts) {
+  const textLength = getNormalizedTextLength(...texts)
+
+  if (textLength <= 300) {
+    return [
+      '- 原文较短（<=300 字）时：highlights 1-2 条即可；metrics 0-2 条即可；sections 2-4 组即可；每组 items 1-3 条即可。',
+      '- 短文本的 summary、section.description、items.body 只保留最高信号事实，不要把一句话拆成多条近义表述，也不要为凑结构补模板话。',
+    ]
+  }
+
+  if (textLength <= 1200) {
+    return [
+      '- 原文中等（301-1200 字）时：highlights 2-3 条；metrics 1-4 条；sections 3-6 组；每组 items 1-4 条，按信息密度取舍。',
+      '- 中等长度文本优先覆盖关键动作、结果、风险与下一步，避免重复解释同一事项。',
+    ]
+  }
+
+  return [
+    '- 原文较长（>1200 字）时：highlights 建议 3 条；metrics 建议 3-6 条；sections 建议 5-8 组；每组 items 建议 2-6 条。',
+    '- 长文本也只保留高信号内容，不要把原文顺序机械摊平为大量低信息条目。',
+  ]
+}
+
 export function buildStructuredMessages(params) {
   const { rawText, sensitiveMode, styleMeta, templateMeta, context, promptProfile } = params
   const profile = normalizePromptProfile(promptProfile)
@@ -41,15 +78,21 @@ export function buildStructuredMessages(params) {
     '【抽取与归一化规则】',
     '1. 事实优先：只能提炼原文事实，不得编造数字、单位、人名、结论。',
     '2. 冲突保守：原文有冲突时优先使用更明确、更可核验的信息，并保持措辞保守。',
-    '3. 结构稳定：highlights 固定 3 条；metrics 建议 3-6 条；sections 建议 5-8 组。',
+    '3. 结构稳定：字段顺序固定，但条目数量必须按原文长度与信息密度自适应，禁止为凑结构重复表述。',
     '4. 可执行性：progress_items/risk_items/next_actions 尽量补齐 owner 或 dependency。',
     '5. 可追溯性：summary、highlights、decision_requests 必须能在原文中找到依据。',
     sourceFirstMode
-      ? '6. 原文优先：summary 控制在 120-260 字；每个 items.body 建议 40-180 字，可保留原句顺序与关键表述。'
-      : '6. 紧凑输出：summary 控制在 90-180 字；每个 items.body 建议 30-90 字。',
+      ? '6. 原文优先：summary 通常控制在 120-260 字，短文本可更短；每个 items.body 建议 40-180 字，短文本按事实点自然收缩。'
+      : '6. 紧凑输出：summary 通常控制在 90-180 字，短文本可压缩到 60-120 字；每个 items.body 建议 30-90 字。',
     sourceFirstMode
       ? '7. 允许在字段内保留短段原文，避免过度改写；仅做必要结构化，不做激进压缩。'
       : '7. 禁止把整段原文逐字复制到单个字段，必须做信息压缩与归纳。',
+    '',
+    '【标题与内容质量规则】',
+    ...getStructuredQualityRules(),
+    '',
+    '【按原文长度控制密度】',
+    ...getStructuredDensityRules(rawText),
     '',
     '【组织上下文自动适配】',
     `- 部门：${departmentProfile.name}`,
@@ -91,7 +134,7 @@ export function buildStructuredMessages(params) {
       '【V2 质量增强协议】',
       '- 输出必须以 { 开始并以 } 结束，不得携带任何前后缀。',
       '- decision_requests 和 resource_requests 必须可执行，优先用“动作 + 时间 + 对象”的句式。',
-      '- sections 每组 items 控制在 2-6 条，优先高信号信息，不要流水账。',
+      '- sections 与每组 items 数量都按原文长度和信息密度自适应，优先高信号信息，不要流水账。',
       '- 若无法确认责任人或时间，明确写“待补充”，不要隐式猜测。',
     )
   }
@@ -132,16 +175,22 @@ export function buildStructuredRetryMessages(params) {
     `JSON 结构（字段名不可改）：${schema}`,
     '硬性要求：',
     sourceFirstMode
-      ? '1. summary 120-260 字；highlights 固定 3 条；sections 4-8 组。'
-      : '1. summary 90-160 字；highlights 固定 3 条；sections 4-6 组。',
+      ? '1. summary 120-260 字，短文本可更短；输出条目数量按原文长度自适应，禁止硬凑。'
+      : '1. summary 90-160 字，短文本可压缩到 60-120 字；输出条目数量按原文长度自适应，禁止硬凑。',
     sourceFirstMode
-      ? '2. 每个 items.body 40-180 字，可保留原句或短段，不做过度压缩。'
+      ? '2. 每个 items.body 40-180 字，短文本可按事实点收缩；可保留原句或短段，不做过度压缩。'
       : '2. 每个 items.body 30-80 字，禁止整段复制原文。',
     '3. 信息必须来自原文，不得编造。',
     `4. 部门：${departmentProfile.name}；重点：${departmentProfile.priorities.join('、')}`,
     `5. 受众：${audienceProfile.name}；关注：${audienceProfile.decisionFocus}`,
     `6. 风格：${styleProfile.name}；策略：${styleProfile.languageStrategy}`,
     `7. 模板侧重：${templateMeta.focus}`,
+    '',
+    '标题与内容质量规则：',
+    ...getStructuredQualityRules(),
+    '',
+    '按原文长度控制密度：',
+    ...getStructuredDensityRules(rawText),
   ]
 
   if (profile === 'v2') {
@@ -191,13 +240,19 @@ export function buildStructuredRepairMessages(params) {
     '3. 确保括号、引号、逗号完整，最终可被 JSON.parse 一次成功。',
     `4. 部门：${departmentProfile.name}；受众：${audienceProfile.name}`,
     `5. 风格：${styleProfile.name}；模板侧重：${templateMeta.focus}`,
+    '',
+    '标题与内容质量规则：',
+    ...getStructuredQualityRules(),
+    '',
+    '按原文长度控制密度：',
+    ...getStructuredDensityRules(rawText, brokenOutput),
   ]
 
   if (profile === 'v2') {
     systemLines.push(
       sourceFirstMode
-        ? '6. sections 建议 4-8 组，可保留原文关键段落，不做激进压缩。'
-        : '6. sections 建议 4-6 组，禁止把整段原文复制到单字段。',
+        ? '6. sections 数量按原文长度自适应，可保留原文关键段落，但不要为凑结构拆分同义句。'
+        : '6. sections 数量按原文长度自适应，禁止把整段原文复制到单字段，也禁止为凑结构重复改写。',
     )
     systemLines.push('7. decision_requests 与 resource_requests 优先输出可执行语句。')
   }
@@ -247,13 +302,19 @@ export function buildStructuredPolishMessages(params) {
       : '2. 允许表达升级：在不改变事实前提下，优化措辞、压缩冗余、增强管理层可读性。',
     '3. 缺失字段要补齐：无法确认的责任人/时间/依赖统一写“待补充”，不要留空。',
     sourceFirstMode
-      ? '4. summary 建议 130-280 字；highlights 固定 3 条；metrics 建议 3-6 条。'
-      : '4. summary 建议 110-200 字；highlights 固定 3 条；metrics 建议 3-6 条。',
+      ? '4. summary 建议 130-280 字，短文本可更短；输出条目数量按原文长度自适应，禁止硬凑。'
+      : '4. summary 建议 110-200 字，短文本可压缩到 70-140 字；输出条目数量按原文长度自适应，禁止硬凑。',
     sourceFirstMode
-      ? '5. sections 建议 5-9 组，每组 items 建议 2-8 条，每条 body 建议 40-180 字。'
-      : '5. sections 建议 5-8 组，每组 items 建议 2-6 条，每条 body 建议 35-100 字。',
+      ? '5. 每条 body 建议 40-180 字，短文本可按事实点收缩；sections 与 items 数量按原文长度自适应。'
+      : '5. 每条 body 建议 35-100 字，短文本可进一步压缩；sections 与 items 数量按原文长度自适应。',
     '6. decision_requests/resource_requests 要可执行，优先“动作 + 时间 + 对象”句式。',
     sourceFirstMode ? '- 对“党建思政与监督”部门，输出风格偏纪实，不追求过度摘要。' : '',
+    '',
+    '标题与内容质量规则：',
+    ...getStructuredQualityRules(),
+    '',
+    '按原文长度控制密度：',
+    ...getStructuredDensityRules(rawText, structuredDraft),
     '',
     `部门：${departmentProfile.name}；重点：${departmentProfile.priorities.join('、')}`,
     `受众：${audienceProfile.name}；关注：${audienceProfile.decisionFocus}`,
