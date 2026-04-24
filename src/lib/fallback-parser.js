@@ -126,8 +126,12 @@ function normalizeText(value) {
     .replace(/\r/g, '\n')
     .split('\n')
     .map((line) => line.trim())
-    .filter(Boolean)
+    .filter((line) => Boolean(line) && !isSourceMetaLine(line))
     .join('\n')
+}
+
+function isSourceMetaLine(line) {
+  return /^【文档\s+\d+\/\d+｜.+】$/.test(line) || /^【补充正文】$/.test(line)
 }
 
 function detectTitle(lines) {

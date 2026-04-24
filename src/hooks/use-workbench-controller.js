@@ -57,9 +57,28 @@ function extractTitleFromHtml(htmlText) {
     .trim()
 }
 
+function mergeUniqueFiles(currentFiles, nextFiles) {
+  const merged = Array.isArray(currentFiles) ? [...currentFiles] : []
+  const nextList = Array.isArray(nextFiles) ? nextFiles : []
+  const fingerprintSet = new Set(
+    merged.map((file) => `${file.name}::${file.size}::${file.lastModified}`),
+  )
+
+  for (const file of nextList) {
+    const fingerprint = `${file.name}::${file.size}::${file.lastModified}`
+    if (fingerprintSet.has(fingerprint)) {
+      continue
+    }
+    merged.push(file)
+    fingerprintSet.add(fingerprint)
+  }
+
+  return merged
+}
+
 export function useWorkbenchController() {
   const [inputMode, setInputMode] = useState('file')
-  const [selectedFile, setSelectedFile] = useState(null)
+  const [selectedFiles, setSelectedFiles] = useState([])
   const [manualText, setManualText] = useState('')
   const [selectedTemplateId, setSelectedTemplateId] = useState(() => templateOptionCatalog[0]?.id ?? null)
   const [generationMode, setGenerationMode] = useState('structured-template')
@@ -106,7 +125,7 @@ export function useWorkbenchController() {
   const defaultTemplateMeta = templateOptionCatalog[0]?.templateMeta ?? null
   const currentStyle = styleCatalog.find((item) => item.id === stylePreference) ?? styleCatalog[0]
 
-  const hasContent = inputMode === 'file' ? Boolean(selectedFile) : Boolean(manualText.trim())
+  const hasContent = inputMode === 'file' ? selectedFiles.length > 0 : Boolean(manualText.trim())
   const canGenerate = Boolean(hasContent && (generationMode === 'llm-html' || selectedTemplate)) && !isGenerating
   const canResetReport = Boolean(isReportReady && !isGenerating)
   const canPrimaryAction = canGenerate || canResetReport
@@ -241,7 +260,7 @@ export function useWorkbenchController() {
       const [extractSourceText, generateReport] = await Promise.all([loadExtractSourceText(), loadGenerateReport()])
 
       const extraction = await extractSourceText({
-        file: inputMode === 'file' ? selectedFile : null,
+        files: inputMode === 'file' ? selectedFiles : [],
         text: inputMode === 'text' ? manualText : '',
         maxChars: maxSourceChars,
         pushLog,
@@ -772,13 +791,21 @@ export function useWorkbenchController() {
       resetGeneratedOutput()
       setDepartment(value)
     },
-    onFileRemove: () => {
+    onFileRemove: (targetIndex) => {
       resetGeneratedOutput()
-      setSelectedFile(null)
+      setSelectedFiles((prev) => {
+        if (!Array.isArray(prev) || prev.length === 0) {
+          return []
+        }
+        if (typeof targetIndex !== 'number') {
+          return []
+        }
+        return prev.filter((_, index) => index !== targetIndex)
+      })
     },
-    onFileSelect: (file) => {
+    onFileSelect: (files) => {
       resetGeneratedOutput()
-      setSelectedFile(file)
+      setSelectedFiles((prev) => mergeUniqueFiles(prev, Array.isArray(files) ? files : []))
     },
     onGenerationModeChange: (value) => {
       resetGeneratedOutput()
@@ -806,7 +833,7 @@ export function useWorkbenchController() {
     previewStageRef,
     previewState,
     recentReports,
-    selectedFile,
+    selectedFiles,
     selectedTemplate,
     sensitiveMode,
     setPreviewDevice,

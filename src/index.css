@@ -820,6 +820,36 @@ select {
     box-shadow var(--duration-mid) var(--ease-smooth);
 }
 
+.uploaded-file-stack {
+  display: grid;
+  gap: 10px;
+}
+
+.uploaded-file-summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 8px 2px 0;
+}
+
+.uploaded-file-summary strong {
+  font-size: 13px;
+}
+
+.uploaded-file-summary span {
+  font-size: 11px;
+  color: var(--text-secondary);
+}
+
+.uploaded-file-list {
+  display: grid;
+  gap: 8px;
+  max-height: 220px;
+  overflow-y: auto;
+  padding-right: 2px;
+}
+
 .upload-dropzone::before {
   content: '';
   position: absolute;
@@ -875,6 +905,10 @@ select {
   color: var(--accent-primary);
 }
 
+.upload-dropzone--compact {
+  min-height: 104px;
+}
+
 .uploaded-file-card {
   display: flex;
   align-items: center;
@@ -896,6 +930,17 @@ select {
 .uploaded-file-card span {
   font-size: 11px;
   color: var(--text-secondary);
+}
+
+.uploaded-file-card > div {
+  min-width: 0;
+}
+
+.uploaded-file-card strong,
+.uploaded-file-card span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .uploaded-file-card button {

@@ -4,9 +4,14 @@ let pdfRuntimePromise = null
 
 export async function extractSourceText(params) {
   const startedAt = performance.now()
-  const { file, text, maxChars, pushLog } = params
+  const { file, files, text, maxChars, pushLog } = params
+  const normalizedFiles = Array.isArray(files)
+    ? files.filter(Boolean)
+    : file
+      ? [file]
+      : []
 
-  if (!file && !text.trim()) {
+  if (normalizedFiles.length === 0 && !text.trim()) {
     throw new Error('请先上传文件或输入正文。')
   }
 
@@ -19,25 +24,33 @@ export async function extractSourceText(params) {
     module: '文件抽取',
     event: '输入',
     payload: {
-      fileName: file?.name ?? null,
+      fileCount: normalizedFiles.length,
+      fileNames: normalizedFiles.map((item) => item.name),
       manualTextLength: text.trim().length,
       maxChars,
     },
     timestamp: new Date().toISOString(),
   })
 
-  if (file) {
-    const suffix = getSuffix(file.name)
-    const fileResult = await extractFromFile({ file, suffix, pushLog })
+  for (let index = 0; index < normalizedFiles.length; index += 1) {
+    const currentFile = normalizedFiles[index]
+    const suffix = getSuffix(currentFile.name)
+    const fileResult = await extractFromFile({
+      file: currentFile,
+      suffix,
+      pushLog,
+      fileIndex: index,
+      fileCount: normalizedFiles.length,
+    })
     if (fileResult.text) {
-      parts.push(fileResult.text)
+      parts.push(buildFileChunkLabel(currentFile.name, index, normalizedFiles.length, fileResult.text))
     }
     warnings.push(...fileResult.warnings)
     sourceTypes.push(fileResult.sourceType)
   }
 
   if (text.trim()) {
-    parts.push(normalizeText(text))
+    parts.push(buildManualChunkLabel(text))
     sourceTypes.push('manual-text')
   }
 
@@ -57,7 +70,7 @@ export async function extractSourceText(params) {
     rawText,
     sourceType,
     warnings,
-    fileName: file?.name ?? null,
+    fileNames: normalizedFiles.map((item) => item.name),
     extractedPreview: rawText.slice(0, 1200),
   }
 
@@ -84,7 +97,7 @@ export async function extractSourceText(params) {
 }
 
 async function extractFromFile(params) {
-  const { file, suffix, pushLog } = params
+  const { file, suffix, pushLog, fileIndex = 0, fileCount = 1 } = params
 
   pushLog({
     kind: 'system',
@@ -92,6 +105,8 @@ async function extractFromFile(params) {
     event: '开始处理文件',
     payload: {
       fileName: file.name,
+      fileIndex: fileIndex + 1,
+      fileCount,
       suffix,
       size: file.size,
     },
@@ -226,6 +241,22 @@ async function loadPdfRuntime(pushLog) {
 function getSuffix(fileName) {
   const bits = fileName.toLowerCase().split('.')
   return bits.length > 1 ? bits[bits.length - 1] : ''
+}
+
+function buildFileChunkLabel(fileName, index, totalCount, text) {
+  const normalized = normalizeText(text)
+  if (!normalized) {
+    return ''
+  }
+  return [`【文档 ${index + 1}/${totalCount}｜${fileName}】`, normalized].join('\n')
+}
+
+function buildManualChunkLabel(text) {
+  const normalized = normalizeText(text)
+  if (!normalized) {
+    return ''
+  }
+  return ['【补充正文】', normalized].join('\n')
 }
 
 function normalizeText(value) {

@@ -56,7 +56,7 @@ export default function App() {
     previewStageRef,
     previewState,
     recentReports,
-    selectedFile,
+    selectedFiles,
     selectedTemplate,
     sensitiveMode,
     setPreviewDevice,
@@ -157,7 +157,7 @@ export default function App() {
             onFileSelect={onFileSelect}
             onInputModeChange={onInputModeChange}
             onManualTextChange={onManualTextChange}
-            selectedFile={selectedFile}
+            selectedFiles={selectedFiles}
           />
 
           <GenerateSection

@@ -325,9 +325,22 @@ body::after,
   box-shadow: 0 0 0 1px rgba(118, 173, 235, 0.12);
 }
 
+.uploaded-file-summary span {
+  color: rgba(190, 205, 226, 0.7);
+}
+
 .upload-icon {
   font-size: 18px;
   opacity: 0.78;
+}
+
+.uploaded-file-list::-webkit-scrollbar {
+  width: 5px;
+}
+
+.uploaded-file-list::-webkit-scrollbar-thumb {
+  border-radius: 999px;
+  background: rgba(118, 173, 235, 0.22);
 }
 
 .uploaded-file-card,
