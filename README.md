@@ -261,6 +261,10 @@ npm run build
 - `VITE_OPENROUTER_ALLOW_DIRECT_FALLBACK`：代理失败时是否允许前端自动直连（默认关闭，避免用量漏记）
 - `OPENROUTER_PROXY_ENABLED`：服务端 OpenRouter 代理开关（默认 `true`）
 - `OPENROUTER_PROXY_BODY_LIMIT_BYTES`：代理接口请求体上限（默认 `2097152`）
+- `SILICONFLOW_API_KEY`：硅基流动 API Key（可选；配置后启用自动兜底）
+- `SILICONFLOW_BASE_URL`：硅基流动网关地址（默认 `https://api.siliconflow.cn/v1`）
+- `SILICONFLOW_MODEL`：硅基流动默认模型（默认 `Pro/moonshotai/Kimi-K2.6`）
+- 自动切换策略：每天默认优先 OpenRouter；OpenRouter 失败后自动切到硅基流动，并在当天优先走硅基流动；次日自动重置为 OpenRouter 优先。
 - `USAGE_RETENTION_DAYS`：用量记录保留天数（默认 `90`）
 - `USAGE_MAX_RECORDS`：用量记录最大保留条数（默认 `20000`）
 - `USAGE_CLEANUP_ON_WRITE`：每次记录写入后是否异步清理（默认 `true`）
